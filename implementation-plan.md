@@ -1,30 +1,37 @@
-# MMOS Implementation Plan - Phase 3: Executable Specification & Phase 4: Reference Implementation
+# MMOS Implementation Plan - Phase 3: Executable Specification (Design Complete) & Phase 4: Reference Implementation
 
 > **Status**: Planned  
 > **Version**: MMOS v1.0  
-> **Current Phase**: 3 (Executable Specification) — **Design Complete, Implementation Pending**  
-> **Next Phase**: 4 (Reference Implementation)  
+> **Current Phase**: 3 (Executable Specification) — **Design Complete**  
+> **Next Phase**: 4 (Reference Implementation — SDK, Runtime, Tools, Examples)  
 > **Created**: 2026-07-10
 
 ---
 
 ## Executive Summary
 
-**Phase 3 (Executable Specification) — Design Complete, Implementation Pending:**
+**Phase 3 (Executable Specification) — Design Complete:**
 
-| Component | Design Status | Implementation Status |
-|-----------|---------------|----------------------|
-| 20 Architecture Decision Records (ADR-001 to ADR-020) | ✅ Complete | N/A (docs) |
-| 10 Rich Domain JSON Schemas (specs/schemas/) | ✅ Complete | N/A (specs) |
-| Validator (tools/validator/) | ✅ Spec Complete | ⏳ **Not Started** (only design docs in tools/validator/*.md) |
-| Generator (tools/generators/) | ✅ Spec Complete | ⏳ **Not Started** (only design docs in tools/generators/*.md) |
-| CLI (tools/cli/) | ✅ Spec Complete | ⏳ **Not Started** (only design docs in tools/cli/*.md) |
+| Component | Status | Notes |
+|-----------|--------|-------|
+| 20 Architecture Decision Records (ADR-001 to ADR-020) | ✅ Complete | Frozen architectural contracts |
+| 10 Rich Domain JSON Schemas (specs/schemas/) | ✅ Complete | Source of truth for validation |
+| Validator Specification (tools/validator/) | ✅ Spec Complete | Design docs only; implementation deferred |
+| Generator Specification (tools/generators/) | ✅ Spec Complete | Design docs only; implementation deferred |
+| CLI Specification (tools/cli/) | ✅ Spec Complete | Design docs only; implementation deferred |
 
 > **Per AUDIT_REPORT.md**: "Tidak ada kode implementasi... tools/ hanya berisi dokumen spesifikasi/desain markdown."
 
-**Phase 3 Goal**: Implement Validator, Generator, and CLI as working TypeScript tools that consume the JSON schemas and enforce ADR compliance.
+**Key Clarification**: Validator, Generator, and CLI **implementation** is intentionally deferred to **Phase 4**, where they will be built **on top of the MMOS SDK** (consuming its schema validation, domain models, and engine interfaces). This ensures:
+- Tools share the same validation logic as the Runtime
+- Single source of truth for domain types (SDK)
+- Tools can generate code that directly uses SDK APIs
 
-**Phase 4 Goal**: Build a working Reference Implementation — SDK + Runtime + Sample Apps — that proves the architecture executes correctly end-to-end.
+**Phase 4 Goal**: Deliver the complete Reference Implementation:
+1. **MMOS SDK** — Core library: domain models, schema validation, engine interfaces, builders
+2. **Reference Runtime** — Orchestrator + Engine implementations
+3. **Developer Tools** — Validator, Generator, CLI (built on SDK)
+4. **Sample Applications** — End-to-end demos proving the stack works
 
 ---
 

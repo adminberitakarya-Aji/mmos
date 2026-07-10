@@ -60,11 +60,38 @@ The project follows the principles of Keep a Changelog and Semantic Versioning.
 * IMS-800 Event Specification
 * IMS-900 Service Contract
 
+## Phase 3 - Executable Specification (Completed)
+
+### Architecture Decision Records
+* ADR-001 through ADR-020 (20 records)
+
+### JSON Schema (Rich Domain Schema)
+* agent.schema.json
+* artifact.schema.json
+* capability.schema.json
+* composition.schema.json
+* event.schema.json
+* execution.schema.json
+* memory.schema.json
+* runtime.schema.json
+* task.schema.json
+* workflow.schema.json
+
+### Validator
+* Architecture specification
+* Validation rules
+* Examples
+
+### Generator
+* Architecture specification
+* Templates
+* Examples
+
+### CLI
+* Commands reference
+* Configuration
+* Examples
+
 ## Planned
 
-* Architecture Decision Records
-* JSON Schema
-* Validator
-* Generator
-* CLI
-* Reference Implementation
+* Reference Implementation (SDK, Runtime, UI, Sample Apps, Marketplace)

@@ -1,0 +1,906 @@
+/**
+ * MMOS Builders - Fluent API for Domain Objects
+ * Per ADR-001: Composition is the Heart
+ * Per ADR-007: Workflow is Declarative
+ */
+
+import {
+  Uoid,
+  Composition,
+  Workflow,
+  Task,
+  Agent,
+  Execution,
+  Runtime,
+  Capability,
+  Memory,
+  ProviderConfig,
+  AuthConfig,
+  CapabilityInput,
+  CapabilityOutput,
+} from '../domain/index.js';
+import { createComposition } from '../domain/composition.js';
+import { createWorkflow } from '../domain/workflow.js';
+import { createTask } from '../domain/task.js';
+import { createAgent } from '../domain/agent.js';
+import { createExecution } from '../domain/execution.js';
+import { createRuntime } from '../domain/runtime.js';
+import { createCapability } from '../domain/capability.js';
+import { createMemory } from '../domain/memory.js';
+
+/**
+ * CompositionBuilder - Fluent API for creating Compositions
+ */
+export class CompositionBuilder {
+  private project!: Uoid;
+  private workspace!: Uoid;
+  private name = '';
+  private version = '1.0.0';
+  private description = '';
+  private workflows: Uoid[] = [];
+  private agents: Uoid[] = [];
+  private capabilities: Uoid[] = [];
+  private memory: Uoid[] = [];
+  private entryWorkflow: Uoid | undefined;
+  private config: Record<string, unknown> | undefined;
+  private createdBy: string | undefined;
+  private ownedBy: string | undefined;
+
+  static create(): CompositionBuilder {
+    return new CompositionBuilder();
+  }
+
+  withProject(project: Uoid): this {
+    this.project = project;
+    return this;
+  }
+
+  withWorkspace(workspace: Uoid): this {
+    this.workspace = workspace;
+    return this;
+  }
+
+  withName(name: string): this {
+    this.name = name;
+    return this;
+  }
+
+  withVersion(version: string): this {
+    this.version = version;
+    return this;
+  }
+
+  withDescription(description: string): this {
+    this.description = description;
+    return this;
+  }
+
+  addWorkflow(workflow: Uoid): this {
+    this.workflows.push(workflow);
+    return this;
+  }
+
+  addWorkflows(workflows: readonly Uoid[]): this {
+    this.workflows = [...workflows];
+    return this;
+  }
+
+  addAgent(agent: Uoid): this {
+    this.agents.push(agent);
+    return this;
+  }
+
+  addAgents(agents: readonly Uoid[]): this {
+    this.agents = [...agents];
+    return this;
+  }
+
+  addCapability(capability: Uoid): this {
+    this.capabilities.push(capability);
+    return this;
+  }
+
+  addCapabilities(capabilities: readonly Uoid[]): this {
+    this.capabilities = [...capabilities];
+    return this;
+  }
+
+  addMemory(memory: Uoid): this {
+    this.memory.push(memory);
+    return this;
+  }
+
+  setEntryWorkflow(workflow: Uoid): this {
+    this.entryWorkflow = workflow;
+    return this;
+  }
+
+  withConfig(config: Record<string, unknown>): this {
+    this.config = config;
+    return this;
+  }
+
+  withCreatedBy(createdBy: string): this {
+    this.createdBy = createdBy;
+    return this;
+  }
+
+  withOwnedBy(ownedBy: string): this {
+    this.ownedBy = ownedBy;
+    return this;
+  }
+
+  build(): Composition {
+    if (!this.project || !this.workspace) {
+      throw new Error('Project and Workspace are required for Composition');
+    }
+    if (!this.name) {
+      throw new Error('Composition name is required');
+    }
+
+    return createComposition({
+      project: this.project,
+      workspace: this.workspace,
+      name: this.name,
+      version: this.version,
+      description: this.description,
+      workflows: this.workflows,
+      agents: this.agents,
+      capabilities: this.capabilities,
+      memory: this.memory,
+      ...(this.entryWorkflow !== undefined && { entryWorkflow: this.entryWorkflow }),
+      ...(this.config !== undefined && { config: this.config }),
+      ...(this.createdBy !== undefined && { createdBy: this.createdBy }),
+      ...(this.ownedBy !== undefined && { ownedBy: this.ownedBy }),
+    });
+  }
+}
+
+/**
+ * WorkflowBuilder - Fluent API for creating Workflows
+ */
+export class WorkflowBuilder {
+  private composition!: Uoid;
+  private name = '';
+  private version = '1.0.0';
+  private description = '';
+  private tasks: Uoid[] = [];
+  private transitions: Array<{ from: Uoid; to: Uoid; condition: string | undefined }> = [];
+  private entryTask: Uoid | undefined;
+  private variables: Record<string, unknown> | undefined;
+  private timeout: number | undefined;
+  private createdBy: string | undefined;
+  private ownedBy: string | undefined;
+
+  static create(): WorkflowBuilder {
+    return new WorkflowBuilder();
+  }
+
+  withComposition(composition: Uoid): this {
+    this.composition = composition;
+    return this;
+  }
+
+  withName(name: string): this {
+    this.name = name;
+    return this;
+  }
+
+  withVersion(version: string): this {
+    this.version = version;
+    return this;
+  }
+
+  withDescription(description: string): this {
+    this.description = description;
+    return this;
+  }
+
+  addTask(task: Uoid): this {
+    this.tasks.push(task);
+    return this;
+  }
+
+  addTasks(tasks: readonly Uoid[]): this {
+    this.tasks = [...tasks];
+    return this;
+  }
+
+  addTransition(from: Uoid, to: Uoid, condition?: string): this {
+    this.transitions.push({ from, to, condition });
+    return this;
+  }
+
+  setEntryTask(task: Uoid): this {
+    this.entryTask = task;
+    return this;
+  }
+
+  withVariables(variables: Record<string, unknown>): this {
+    this.variables = variables;
+    return this;
+  }
+
+  withTimeout(timeout: number): this {
+    this.timeout = timeout;
+    return this;
+  }
+
+  withCreatedBy(createdBy: string): this {
+    this.createdBy = createdBy;
+    return this;
+  }
+
+  withOwnedBy(ownedBy: string): this {
+    this.ownedBy = ownedBy;
+    return this;
+  }
+
+  build(): Workflow {
+    if (!this.composition) {
+      throw new Error('Composition is required for Workflow');
+    }
+    if (!this.name) {
+      throw new Error('Workflow name is required');
+    }
+
+    return createWorkflow({
+      composition: this.composition,
+      name: this.name,
+      version: this.version,
+      description: this.description,
+      tasks: this.tasks,
+      transitions: this.transitions,
+      entryTask: this.entryTask,
+      variables: this.variables,
+      timeout: this.timeout,
+      createdBy: this.createdBy,
+      ownedBy: this.ownedBy,
+    });
+  }
+}
+
+/**
+ * TaskBuilder - Fluent API for creating Tasks
+ */
+export class TaskBuilder {
+  private workflow!: Uoid;
+  private agent!: Uoid;
+  private capability!: Uoid;
+  private name = '';
+  private version = '1.0.0';
+  private description = '';
+  private input: Record<string, unknown> | undefined;
+  private inputTemplate: string | undefined;
+  private outputMapping: Record<string, string> | undefined;
+  private retryPolicy: { maxAttempts: number; delayMs: number; backoffMultiplier?: number; retryOn?: string[] } | undefined;
+  private timeout: number | undefined;
+  private humanTaskConfig: { title: string; description: string; formSchema?: Record<string, unknown>; assignee?: string; dueDate?: Date } | undefined;
+  private createdBy: string | undefined;
+  private ownedBy: string | undefined;
+
+  static create(): TaskBuilder {
+    return new TaskBuilder();
+  }
+
+  withWorkflow(workflow: Uoid): this {
+    this.workflow = workflow;
+    return this;
+  }
+
+  withAgent(agent: Uoid): this {
+    this.agent = agent;
+    return this;
+  }
+
+  withCapability(capability: Uoid): this {
+    this.capability = capability;
+    return this;
+  }
+
+  withName(name: string): this {
+    this.name = name;
+    return this;
+  }
+
+  withVersion(version: string): this {
+    this.version = version;
+    return this;
+  }
+
+  withDescription(description: string): this {
+    this.description = description;
+    return this;
+  }
+
+  withInput(input: Record<string, unknown>): this {
+    this.input = input;
+    return this;
+  }
+
+  withInputTemplate(template: string): this {
+    this.inputTemplate = template;
+    return this;
+  }
+
+  withOutputMapping(mapping: Record<string, string>): this {
+    this.outputMapping = mapping;
+    return this;
+  }
+
+  withRetryPolicy(policy: { maxAttempts: number; delayMs: number; backoffMultiplier?: number; retryOn?: string[] }): this {
+    this.retryPolicy = policy;
+    return this;
+  }
+
+  withTimeout(timeout: number): this {
+    this.timeout = timeout;
+    return this;
+  }
+
+  allowHumanIntervention(config?: { title: string; description: string; formSchema?: Record<string, unknown>; assignee?: string; dueDate?: Date }): this {
+    this.humanTaskConfig = config;
+    return this;
+  }
+
+  withCreatedBy(createdBy: string): this {
+    this.createdBy = createdBy;
+    return this;
+  }
+
+  withOwnedBy(ownedBy: string): this {
+    this.ownedBy = ownedBy;
+    return this;
+  }
+
+  build(): Task {
+    if (!this.workflow || !this.agent || !this.capability) {
+      throw new Error('Workflow, Agent, and Capability are required for Task');
+    }
+    if (!this.name) {
+      throw new Error('Task name is required');
+    }
+
+    return createTask({
+      workflow: this.workflow,
+      agent: this.agent,
+      capability: this.capability,
+      name: this.name,
+      version: this.version,
+      description: this.description,
+      input: this.input,
+      inputTemplate: this.inputTemplate,
+      outputMapping: this.outputMapping,
+      retryPolicy: this.retryPolicy,
+      timeout: this.timeout,
+      allowHumanIntervention: this.humanTaskConfig !== undefined,
+      humanTaskConfig: this.humanTaskConfig,
+      createdBy: this.createdBy,
+      ownedBy: this.ownedBy,
+    });
+  }
+}
+
+/**
+ * AgentBuilder - Fluent API for creating Agents
+ */
+export class AgentBuilder {
+  private composition!: Uoid;
+  private name = '';
+  private version = '1.0.0';
+  private description = '';
+  private capabilities: Uoid[] = [];
+  private memory: Uoid[] = [];
+  private runtime!: Uoid;
+  private policies: { maxConcurrentTasks?: number; defaultTimeout?: number; retryPolicy?: { maxAttempts: number; delayMs: number; backoffMultiplier?: number }; allowDelegation?: boolean } | undefined;
+  private planning: { enabled: boolean; model?: string; temperature?: number; maxSteps?: number } | undefined;
+  private createdBy: string | undefined;
+  private ownedBy: string | undefined;
+
+  static create(): AgentBuilder {
+    return new AgentBuilder();
+  }
+
+  withComposition(composition: Uoid): this {
+    this.composition = composition;
+    return this;
+  }
+
+  withName(name: string): this {
+    this.name = name;
+    return this;
+  }
+
+  withVersion(version: string): this {
+    this.version = version;
+    return this;
+  }
+
+  withDescription(description: string): this {
+    this.description = description;
+    return this;
+  }
+
+  addCapability(capability: Uoid): this {
+    this.capabilities.push(capability);
+    return this;
+  }
+
+  addCapabilities(capabilities: readonly Uoid[]): this {
+    this.capabilities = [...capabilities];
+    return this;
+  }
+
+  addMemory(memory: Uoid): this {
+    this.memory.push(memory);
+    return this;
+  }
+
+  addMemories(memories: readonly Uoid[]): this {
+    this.memory = [...memories];
+    return this;
+  }
+
+  withRuntime(runtime: Uoid): this {
+    this.runtime = runtime;
+    return this;
+  }
+
+  withPolicies(policies: { maxConcurrentTasks?: number; defaultTimeout?: number; retryPolicy?: { maxAttempts: number; delayMs: number; backoffMultiplier?: number }; allowDelegation?: boolean }): this {
+    this.policies = policies;
+    return this;
+  }
+
+  withPlanning(planning: { enabled: boolean; model?: string; temperature?: number; maxSteps?: number }): this {
+    this.planning = planning;
+    return this;
+  }
+
+  withCreatedBy(createdBy: string): this {
+    this.createdBy = createdBy;
+    return this;
+  }
+
+  withOwnedBy(ownedBy: string): this {
+    this.ownedBy = ownedBy;
+    return this;
+  }
+
+  build(): Agent {
+    if (!this.composition || !this.runtime) {
+      throw new Error('Composition and Runtime are required for Agent');
+    }
+    if (!this.name) {
+      throw new Error('Agent name is required');
+    }
+
+    return createAgent({
+      composition: this.composition,
+      name: this.name,
+      version: this.version,
+      description: this.description,
+      capabilities: this.capabilities,
+      memory: this.memory,
+      runtime: this.runtime,
+      policies: this.policies,
+      planning: this.planning,
+      createdBy: this.createdBy,
+      ownedBy: this.ownedBy,
+    });
+  }
+}
+
+/**
+ * ExecutionBuilder - Fluent API for creating Executions
+ */
+export class ExecutionBuilder {
+  private composition!: Uoid;
+  private workflow!: Uoid;
+  private name = '';
+  private version = '1.0.0';
+  private description = '';
+  private input: Record<string, unknown> | undefined;
+  private variables: Record<string, unknown> | undefined;
+  private parentExecution: Uoid | undefined;
+  private config: { maxConcurrentTasks?: number; defaultTaskTimeout?: number; enableCheckpointing?: boolean; checkpointInterval?: number } | undefined;
+  private createdBy: string | undefined;
+  private ownedBy: string | undefined;
+
+  static create(): ExecutionBuilder {
+    return new ExecutionBuilder();
+  }
+
+  withComposition(composition: Uoid): this {
+    this.composition = composition;
+    return this;
+  }
+
+  withWorkflow(workflow: Uoid): this {
+    this.workflow = workflow;
+    return this;
+  }
+
+  withName(name: string): this {
+    this.name = name;
+    return this;
+  }
+
+  withVersion(version: string): this {
+    this.version = version;
+    return this;
+  }
+
+  withDescription(description: string): this {
+    this.description = description;
+    return this;
+  }
+
+  withInput(input: Record<string, unknown>): this {
+    this.input = input;
+    return this;
+  }
+
+  withVariables(variables: Record<string, unknown>): this {
+    this.variables = variables;
+    return this;
+  }
+
+  withParentExecution(parent: Uoid): this {
+    this.parentExecution = parent;
+    return this;
+  }
+
+  withConfig(config: { maxConcurrentTasks?: number; defaultTaskTimeout?: number; enableCheckpointing?: boolean; checkpointInterval?: number }): this {
+    this.config = config;
+    return this;
+  }
+
+  withCreatedBy(createdBy: string): this {
+    this.createdBy = createdBy;
+    return this;
+  }
+
+  withOwnedBy(ownedBy: string): this {
+    this.ownedBy = ownedBy;
+    return this;
+  }
+
+  build(): Execution {
+    if (!this.composition || !this.workflow) {
+      throw new Error('Composition and Workflow are required for Execution');
+    }
+    if (!this.name) {
+      throw new Error('Execution name is required');
+    }
+
+    return createExecution({
+      composition: this.composition,
+      workflow: this.workflow,
+      name: this.name,
+      version: this.version,
+      description: this.description,
+      input: this.input,
+      variables: this.variables,
+      parentExecution: this.parentExecution,
+      config: this.config,
+      createdBy: this.createdBy,
+      ownedBy: this.ownedBy,
+    });
+  }
+}
+
+/**
+ * RuntimeBuilder - Fluent API for creating Runtime configurations
+ */
+export class RuntimeBuilder {
+  private composition!: Uoid;
+  private name = '';
+  private version = '1.0.0';
+  private description = '';
+  private provider: ProviderConfig = { type: 'openai', model: 'gpt-4o' };
+  private defaultParameters: Record<string, unknown> | undefined;
+  private limits: { maxTokens?: number; maxConcurrentRequests?: number; rateLimitRpm?: number; timeoutMs?: number } | undefined;
+  private fallback: ProviderConfig | undefined;
+  private createdBy: string | undefined;
+  private ownedBy: string | undefined;
+
+  static create(): RuntimeBuilder {
+    return new RuntimeBuilder();
+  }
+
+  withComposition(composition: Uoid): this {
+    this.composition = composition;
+    return this;
+  }
+
+  withName(name: string): this {
+    this.name = name;
+    return this;
+  }
+
+  withVersion(version: string): this {
+    this.version = version;
+    return this;
+  }
+
+  withDescription(description: string): this {
+    this.description = description;
+    return this;
+  }
+
+  withProvider(provider: ProviderConfig): this {
+    this.provider = provider;
+    return this;
+  }
+
+  withDefaultParameters(params: Record<string, unknown>): this {
+    this.defaultParameters = params;
+    return this;
+  }
+
+  withLimits(limits: { maxTokens?: number; maxConcurrentRequests?: number; rateLimitRpm?: number; timeoutMs?: number }): this {
+    this.limits = limits;
+    return this;
+  }
+
+  withFallback(fallback: ProviderConfig): this {
+    this.fallback = fallback;
+    return this;
+  }
+
+  withCreatedBy(createdBy: string): this {
+    this.createdBy = createdBy;
+    return this;
+  }
+
+  withOwnedBy(ownedBy: string): this {
+    this.ownedBy = ownedBy;
+    return this;
+  }
+
+  build(): Runtime {
+    if (!this.composition) {
+      throw new Error('Composition is required for Runtime');
+    }
+    if (!this.name) {
+      throw new Error('Runtime name is required');
+    }
+
+    return createRuntime({
+      composition: this.composition,
+      name: this.name,
+      version: this.version,
+      description: this.description,
+      provider: this.provider,
+      defaultParameters: this.defaultParameters,
+      limits: this.limits,
+      fallback: this.fallback,
+      createdBy: this.createdBy,
+      ownedBy: this.ownedBy,
+    });
+  }
+}
+
+/**
+ * CapabilityBuilder - Fluent API for creating Capabilities
+ */
+export class CapabilityBuilder {
+  private composition!: Uoid;
+  private name = '';
+  private version = '1.0.0';
+  private description = '';
+  private category = '';
+  private provider = '';
+  private inputs: CapabilityInput[] = [];
+  private outputs: CapabilityOutput[] = [];
+  private config: Record<string, unknown> | undefined;
+  private auth: AuthConfig | undefined;
+  private createdBy: string | undefined;
+  private ownedBy: string | undefined;
+
+  static create(): CapabilityBuilder {
+    return new CapabilityBuilder();
+  }
+
+  withComposition(composition: Uoid): this {
+    this.composition = composition;
+    return this;
+  }
+
+  withName(name: string): this {
+    this.name = name;
+    return this;
+  }
+
+  withVersion(version: string): this {
+    this.version = version;
+    return this;
+  }
+
+  withDescription(description: string): this {
+    this.description = description;
+    return this;
+  }
+
+  withCategory(category: string): this {
+    this.category = category;
+    return this;
+  }
+
+  withProvider(provider: string): this {
+    this.provider = provider;
+    return this;
+  }
+
+  addInput(input: CapabilityInput): this {
+    this.inputs.push(input);
+    return this;
+  }
+
+  addInputs(inputs: readonly CapabilityInput[]): this {
+    this.inputs = [...inputs];
+    return this;
+  }
+
+  addOutput(output: CapabilityOutput): this {
+    this.outputs.push(output);
+    return this;
+  }
+
+  addOutputs(outputs: readonly CapabilityOutput[]): this {
+    this.outputs = [...outputs];
+    return this;
+  }
+
+  withConfig(config: Record<string, unknown>): this {
+    this.config = config;
+    return this;
+  }
+
+  withAuth(auth: AuthConfig): this {
+    this.auth = auth;
+    return this;
+  }
+
+  withCreatedBy(createdBy: string): this {
+    this.createdBy = createdBy;
+    return this;
+  }
+
+  withOwnedBy(ownedBy: string): this {
+    this.ownedBy = ownedBy;
+    return this;
+  }
+
+  build(): Capability {
+    if (!this.composition) {
+      throw new Error('Composition is required for Capability');
+    }
+    if (!this.name) {
+      throw new Error('Capability name is required');
+    }
+    if (!this.category) {
+      throw new Error('Capability category is required');
+    }
+    if (!this.provider) {
+      throw new Error('Capability provider is required');
+    }
+
+    return createCapability({
+      composition: this.composition,
+      name: this.name,
+      version: this.version,
+      description: this.description,
+      category: this.category,
+      provider: this.provider,
+      inputs: this.inputs,
+      outputs: this.outputs,
+      config: this.config,
+      auth: this.auth,
+      createdBy: this.createdBy,
+      ownedBy: this.ownedBy,
+    });
+  }
+}
+
+/**
+ * MemoryBuilder - Fluent API for creating Memory instances
+ */
+export class MemoryBuilder {
+  private composition!: Uoid;
+  private name = '';
+  private version = '1.0.0';
+  private description = '';
+  private type: 'ephemeral' | 'persistent' | 'vector' | 'graph' | 'hybrid' = 'ephemeral';
+  private backend = '';
+  private config: Record<string, unknown> | undefined;
+  private ttl: number | undefined;
+  private maxEntries: number | undefined;
+  private createdBy: string | undefined;
+  private ownedBy: string | undefined;
+
+  static create(): MemoryBuilder {
+    return new MemoryBuilder();
+  }
+
+  withComposition(composition: Uoid): this {
+    this.composition = composition;
+    return this;
+  }
+
+  withName(name: string): this {
+    this.name = name;
+    return this;
+  }
+
+  withVersion(version: string): this {
+    this.version = version;
+    return this;
+  }
+
+  withDescription(description: string): this {
+    this.description = description;
+    return this;
+  }
+
+  withType(type: 'ephemeral' | 'persistent' | 'vector' | 'graph' | 'hybrid'): this {
+    this.type = type;
+    return this;
+  }
+
+  withBackend(backend: string): this {
+    this.backend = backend;
+    return this;
+  }
+
+  withConfig(config: Record<string, unknown>): this {
+    this.config = config;
+    return this;
+  }
+
+  withTTL(ttl: number): this {
+    this.ttl = ttl;
+    return this;
+  }
+
+  withMaxEntries(maxEntries: number): this {
+    this.maxEntries = maxEntries;
+    return this;
+  }
+
+  withCreatedBy(createdBy: string): this {
+    this.createdBy = createdBy;
+    return this;
+  }
+
+  withOwnedBy(ownedBy: string): this {
+    this.ownedBy = ownedBy;
+    return this;
+  }
+
+  build(): Memory {
+    if (!this.composition) {
+      throw new Error('Composition is required for Memory');
+    }
+    if (!this.name) {
+      throw new Error('Memory name is required');
+    }
+    if (!this.backend) {
+      throw new Error('Memory backend is required');
+    }
+
+    return createMemory({
+      composition: this.composition,
+      name: this.name,
+      version: this.version,
+      description: this.description,
+      type: this.type,
+      backend: this.backend,
+      config: this.config,
+      ttl: this.ttl,
+      maxEntries: this.maxEntries,
+      createdBy: this.createdBy,
+      ownedBy: this.ownedBy,
+    });
+  }
+}

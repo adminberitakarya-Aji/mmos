@@ -1,0 +1,26 @@
+{
+  "name": "mmos",
+  "version": "1.0.0",
+  "description": "Multimedia Multi-Agent Orchestration System",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "build:sdk": "npm run build --workspace=@mmos/sdk",
+    "test": "npm run test --workspaces",
+    "test:sdk": "npm run test --workspace=@mmos/sdk",
+    "lint": "npm run lint --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
+    "clean": "npm run clean --workspaces",
+    "dev:sdk": "npm run dev --workspace=@mmos/sdk"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "npm@10.0.0"
+}

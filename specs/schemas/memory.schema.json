@@ -1,0 +1,605 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mmos.dev/specs/schemas/memory.schema.json",
+  "title": "MMOS Memory Schema",
+  "description": "JSON Schema for MMOS Memory object.",
+  "type": "object",
+
+  "$comment": "MMOS v1.0 - Rich Domain Schema",
+
+  "$defs": {
+
+    "Identity": {
+      "type": "string",
+      "description": "Immutable object identifier.",
+      "minLength": 4,
+      "maxLength": 128,
+      "pattern": "^[a-z]{3}_[A-Za-z0-9_-]+$"
+    },
+
+    "SemanticVersion": {
+      "type": "string",
+      "description": "Semantic Version.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+
+    "UUID": {
+      "type": "string",
+      "format": "uuid"
+    },
+
+    "DateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+
+    "NonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+
+    "Description": {
+      "type": "string",
+      "maxLength": 5000
+    },
+
+    "Metadata": {
+      "type": "object",
+      "description": "Memory metadata.",
+      "additionalProperties": true
+    },
+
+    "LabelMap": {
+      "type": "object",
+      "description": "Memory labels.",
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 256
+      }
+    },
+
+    "Timestamp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+
+        "createdAt": {
+          "$ref": "#/$defs/DateTime"
+        },
+
+        "updatedAt": {
+          "$ref": "#/$defs/DateTime"
+        },
+
+        "lastAccessedAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+
+        "expiredAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+
+      }
+    },
+
+    "AuditInformation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "createdBy"
+      ],
+      "properties": {
+
+        "createdBy": {
+          "type": "string",
+          "minLength": 1
+        },
+
+        "updatedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+
+        "deletedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+
+      }
+    },
+
+    "MemoryStatus": {
+      "type": "string",
+      "description": "Lifecycle status of the Memory.",
+      "enum": [
+        "active",
+        "inactive",
+        "expired",
+        "archived",
+        "deleted"
+      ]
+    },
+
+    "MemoryType": {
+      "type": "string",
+      "description": "Logical type of Memory.",
+      "enum": [
+        "working",
+        "conversation",
+        "session",
+        "knowledge",
+        "vector",
+        "document",
+        "cache",
+        "artifact",
+        "custom"
+      ]
+    }
+
+  }
+}
+
+,
+    "MemoryContent": {
+      "type": "object",
+      "description": "Actual content stored in Memory.",
+      "additionalProperties": true
+    },
+
+    "EmbeddingReference": {
+      "type": "object",
+      "description": "Reference to vector embedding associated with this Memory.",
+      "additionalProperties": false,
+      "properties": {
+
+        "embeddingId": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "provider": {
+          "type": "string"
+        },
+
+        "model": {
+          "type": "string"
+        },
+
+        "dimensions": {
+          "type": "integer",
+          "minimum": 1
+        }
+
+      }
+    },
+
+    "MemoryScope": {
+      "type": "object",
+      "description": "Ownership scope of the Memory.",
+      "additionalProperties": false,
+      "properties": {
+
+        "compositionId": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Identity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+
+        "workflowId": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Identity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+
+        "agentId": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Identity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+
+        "userId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+
+        "sessionId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+
+      }
+    },
+
+    "RetentionPolicy": {
+      "type": "object",
+      "description": "Retention and expiration policy.",
+      "additionalProperties": false,
+      "properties": {
+
+        "ttlSeconds": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+
+        "autoExpire": {
+          "type": "boolean",
+          "default": false
+        },
+
+        "archiveBeforeDelete": {
+          "type": "boolean",
+          "default": true
+        }
+
+      }
+    },
+
+    "AccessPolicy": {
+      "type": "object",
+      "description": "Access control policy.",
+      "additionalProperties": false,
+      "properties": {
+
+        "readOnly": {
+          "type": "boolean",
+          "default": false
+        },
+
+        "shared": {
+          "type": "boolean",
+          "default": false
+        },
+
+        "allowedRoles": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        }
+
+      }
+    },
+
+    "MemoryStatistics": {
+      "type": "object",
+      "description": "Runtime statistics for Memory usage.",
+      "additionalProperties": false,
+      "properties": {
+
+        "readCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+
+        "writeCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+
+        "lastSimilarityScore": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        }
+
+      }
+    },
+
+    "MemoryReference": {
+      "type": "object",
+      "description": "Relationship to another Memory object.",
+      "additionalProperties": false,
+      "required": [
+        "memoryId"
+      ],
+      "properties": {
+
+        "memoryId": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "relationship": {
+          "type": "string",
+          "enum": [
+            "parent",
+            "child",
+            "related",
+            "derived",
+            "reference"
+          ]
+        }
+
+      }
+    },
+
+    "MemoryPolicy": {
+      "type": "object",
+      "description": "Operational policy for Memory.",
+      "additionalProperties": false,
+      "properties": {
+
+        "indexable": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "searchable": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "embeddable": {
+          "type": "boolean",
+          "default": true
+        }
+
+      }
+    }
+
+    ,
+
+  "additionalProperties": false,
+
+  "required": [
+    "memoryId",
+    "name",
+    "type",
+    "status",
+    "content",
+    "scope",
+    "policy",
+    "timestamps",
+    "audit"
+  ],
+
+  "properties": {
+
+    "memoryId": {
+      "$ref": "#/$defs/Identity"
+    },
+
+    "name": {
+      "$ref": "#/$defs/NonEmptyString"
+    },
+
+    "displayName": {
+      "type": "string",
+      "maxLength": 256
+    },
+
+    "description": {
+      "$ref": "#/$defs/Description"
+    },
+
+    "version": {
+      "$ref": "#/$defs/SemanticVersion"
+    },
+
+    "type": {
+      "$ref": "#/$defs/MemoryType"
+    },
+
+    "status": {
+      "$ref": "#/$defs/MemoryStatus"
+    },
+
+    "content": {
+      "$ref": "#/$defs/MemoryContent"
+    },
+
+    "embedding": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/EmbeddingReference"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+
+    "scope": {
+      "$ref": "#/$defs/MemoryScope"
+    },
+
+    "retention": {
+      "$ref": "#/$defs/RetentionPolicy"
+    },
+
+    "access": {
+      "$ref": "#/$defs/AccessPolicy"
+    },
+
+    "statistics": {
+      "$ref": "#/$defs/MemoryStatistics"
+    },
+
+    "references": {
+      "type": "array",
+      "description": "Relationships to other Memory objects.",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/MemoryReference"
+      }
+    },
+
+    "policy": {
+      "$ref": "#/$defs/MemoryPolicy"
+    },
+
+    "metadata": {
+      "$ref": "#/$defs/Metadata"
+    },
+
+    "labels": {
+      "$ref": "#/$defs/LabelMap"
+    },
+
+    "timestamps": {
+      "$ref": "#/$defs/Timestamp"
+    },
+
+    "audit": {
+      "$ref": "#/$defs/AuditInformation"
+    },
+
+    "extensions": {
+      "type": "object",
+      "description": "Reserved extension point for future MMOS versions, storage implementations, and custom memory providers.",
+      "additionalProperties": true
+    }
+
+  }
+
+  ,
+
+  "examples": [
+    {
+      "memoryId": "mem_editorial_knowledge",
+
+      "name": "editorial-knowledge",
+      "displayName": "Editorial Knowledge Base",
+      "description": "Shared knowledge used by editorial agents for news production and content generation.",
+
+      "version": "1.0.0",
+
+      "type": "knowledge",
+      "status": "active",
+
+      "content": {
+        "title": "MMOS Editorial Guidelines",
+        "language": "id",
+        "category": "editorial",
+        "text": "All generated news articles must follow the MMOS editorial standards."
+      },
+
+      "embedding": {
+        "embeddingId": "emb_editorial_001",
+        "provider": "OpenAI",
+        "model": "text-embedding-3-large",
+        "dimensions": 3072
+      },
+
+      "scope": {
+        "compositionId": "cmp_news_production",
+        "workflowId": null,
+        "agentId": null,
+        "userId": null,
+        "sessionId": null
+      },
+
+      "retention": {
+        "ttlSeconds": null,
+        "autoExpire": false,
+        "archiveBeforeDelete": true
+      },
+
+      "access": {
+        "readOnly": false,
+        "shared": true,
+        "allowedRoles": [
+          "editor",
+          "administrator",
+          "ai-agent"
+        ]
+      },
+
+      "statistics": {
+        "readCount": 1582,
+        "writeCount": 42,
+        "lastSimilarityScore": 0.962
+      },
+
+      "references": [
+        {
+          "memoryId": "mem_style_guide",
+          "relationship": "related"
+        },
+        {
+          "memoryId": "mem_fact_database",
+          "relationship": "reference"
+        }
+      ],
+
+      "policy": {
+        "indexable": true,
+        "searchable": true,
+        "embeddable": true
+      },
+
+      "metadata": {
+        "department": "editorial",
+        "owner": "knowledge-team",
+        "classification": "internal"
+      },
+
+      "labels": {
+        "domain": "news",
+        "language": "id",
+        "tier": "shared"
+      },
+
+      "timestamps": {
+        "createdAt": "2026-07-10T08:00:00Z",
+        "updatedAt": "2026-07-10T08:30:00Z",
+        "lastAccessedAt": "2026-07-10T09:45:22Z",
+        "expiredAt": null
+      },
+
+      "audit": {
+        "createdBy": "knowledge-admin",
+        "updatedBy": "knowledge-admin",
+        "deletedBy": null
+      },
+
+      "extensions": {}
+    }
+  ]
+}

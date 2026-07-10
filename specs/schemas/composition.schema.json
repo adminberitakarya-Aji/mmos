@@ -1,0 +1,792 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mmos.dev/specs/schemas/composition.schema.json",
+  "title": "MMOS Composition Schema",
+  "description": "JSON Schema for MMOS Composition object.",
+  "type": "object",
+
+  "$comment": "MMOS v1.0 - Rich Domain Schema",
+
+  "$defs": {
+
+    "Identity": {
+      "type": "string",
+      "description": "Immutable object identifier.",
+      "minLength": 4,
+      "maxLength": 128,
+      "pattern": "^[a-z]{3}_[A-Za-z0-9_-]+$"
+    },
+
+    "SemanticVersion": {
+      "type": "string",
+      "description": "Semantic Versioning.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+
+    "UUID": {
+      "type": "string",
+      "format": "uuid"
+    },
+
+    "DateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+
+    "NonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+
+    "Description": {
+      "type": "string",
+      "maxLength": 5000
+    },
+
+    "LabelMap": {
+      "type": "object",
+      "description": "User-defined labels.",
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 256
+      }
+    },
+
+    "Metadata": {
+      "type": "object",
+      "description": "Arbitrary metadata owned by the user.",
+      "additionalProperties": true
+    },
+
+    "Timestamp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+
+        "createdAt": {
+          "$ref": "#/$defs/DateTime"
+        },
+
+        "updatedAt": {
+          "$ref": "#/$defs/DateTime"
+        },
+
+        "archivedAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+
+        "deletedAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+
+      }
+    },
+
+    "AuditInformation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "createdBy"
+      ],
+      "properties": {
+
+        "createdBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+
+        "updatedBy": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 128
+        },
+
+        "archivedBy": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 128
+        },
+
+        "deletedBy": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 128
+        }
+
+      }
+    },
+
+    "Status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "paused",
+        "completed",
+        "failed",
+        "cancelled",
+        "archived",
+        "deleted"
+      ]
+    },
+
+    "OwnerReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "projectId"
+      ],
+      "properties": {
+
+        "projectId": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "organizationId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+
+        "workspaceId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+
+      }
+    }
+
+  }
+}
+
+,
+    "WorkflowReference": {
+      "type": "object",
+      "description": "Reference to a Workflow owned by this Composition.",
+      "additionalProperties": false,
+      "required": [
+        "workflowId",
+        "name",
+        "version",
+        "role"
+      ],
+      "properties": {
+
+        "workflowId": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "name": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+
+        "displayName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+
+        "version": {
+          "$ref": "#/$defs/SemanticVersion"
+        },
+
+        "role": {
+          "type": "string",
+          "enum": [
+            "primary",
+            "secondary",
+            "approval",
+            "fallback"
+          ]
+        },
+
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        }
+
+      }
+    },
+
+    "MemoryReference": {
+      "type": "object",
+      "description": "Reference to an attached Memory.",
+      "additionalProperties": false,
+      "required": [
+        "memoryId",
+        "type"
+      ],
+      "properties": {
+
+        "memoryId": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "type": {
+          "type": "string",
+          "enum": [
+            "conversation",
+            "knowledge",
+            "vector",
+            "document",
+            "session",
+            "cache"
+          ]
+        },
+
+        "readOnly": {
+          "type": "boolean",
+          "default": false
+        }
+
+      }
+    },
+
+    "ArtifactReference": {
+      "type": "object",
+      "description": "Reference to an Artifact produced or consumed by the Composition.",
+      "additionalProperties": false,
+      "required": [
+        "artifactId",
+        "kind"
+      ],
+      "properties": {
+
+        "artifactId": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "kind": {
+          "type": "string",
+          "enum": [
+            "image",
+            "video",
+            "audio",
+            "document",
+            "dataset",
+            "json",
+            "binary",
+            "text",
+            "other"
+          ]
+        },
+
+        "required": {
+          "type": "boolean",
+          "default": false
+        }
+
+      }
+    },
+
+    "CapabilityReference": {
+      "type": "object",
+      "description": "Reference to a Capability used by this Composition.",
+      "additionalProperties": false,
+      "required": [
+        "capabilityId"
+      ],
+      "properties": {
+
+        "capabilityId": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "required": {
+          "type": "boolean",
+          "default": true
+        }
+
+      }
+    },
+
+    "AgentReference": {
+      "type": "object",
+      "description": "Reference to an Agent participating in this Composition.",
+      "additionalProperties": false,
+      "required": [
+        "agentId",
+        "role"
+      ],
+      "properties": {
+
+        "agentId": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "role": {
+          "type": "string"
+        },
+
+        "optional": {
+          "type": "boolean",
+          "default": false
+        }
+
+      }
+    },
+
+    "RuntimeReference": {
+      "type": "object",
+      "description": "Preferred Runtime for executing this Composition.",
+      "additionalProperties": false,
+      "required": [
+        "runtimeId"
+      ],
+      "properties": {
+
+        "runtimeId": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "provider": {
+          "type": "string"
+        },
+
+        "version": {
+          "$ref": "#/$defs/SemanticVersion"
+        }
+
+      }
+    },
+
+    "RetryPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "maxAttempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 3
+        },
+
+        "backoffStrategy": {
+          "type": "string",
+          "enum": [
+            "fixed",
+            "linear",
+            "exponential"
+          ],
+          "default": "exponential"
+        },
+
+        "delaySeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 5
+        }
+
+      }
+    },
+
+    "ExecutionPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+
+        "mode": {
+          "type": "string",
+          "enum": [
+            "sequential",
+            "parallel",
+            "mixed"
+          ],
+          "default": "sequential"
+        },
+
+        "timeoutSeconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+
+        "allowHumanIntervention": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "retryPolicy": {
+          "$ref": "#/$defs/RetryPolicy"
+        }
+
+      }
+    },
+
+    "Configuration": {
+      "type": "object",
+      "description": "Composition execution configuration.",
+      "additionalProperties": true,
+      "properties": {
+
+        "executionPolicy": {
+          "$ref": "#/$defs/ExecutionPolicy"
+        },
+
+        "defaultRuntime": {
+          "$ref": "#/$defs/RuntimeReference"
+        },
+
+        "environment": {
+          "type": "string",
+          "enum": [
+            "development",
+            "testing",
+            "staging",
+            "production"
+          ],
+          "default": "production"
+        },
+
+        "variables": {
+          "type": "object",
+          "additionalProperties": true
+        }
+
+      }
+    }
+,
+
+  "additionalProperties": false,
+
+  "required": [
+    "compositionId",
+    "projectId",
+    "name",
+    "version",
+    "status",
+    "owner",
+    "workflows",
+    "configuration",
+    "timestamps",
+    "audit"
+  ],
+
+  "properties": {
+
+    "compositionId": {
+      "$ref": "#/$defs/Identity"
+    },
+
+    "projectId": {
+      "$ref": "#/$defs/Identity"
+    },
+
+    "parentCompositionId": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/Identity"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+
+    "name": {
+      "$ref": "#/$defs/NonEmptyString"
+    },
+
+    "displayName": {
+      "type": "string",
+      "maxLength": 256
+    },
+
+    "description": {
+      "$ref": "#/$defs/Description"
+    },
+
+    "version": {
+      "$ref": "#/$defs/SemanticVersion"
+    },
+
+    "status": {
+      "$ref": "#/$defs/Status"
+    },
+
+    "owner": {
+      "$ref": "#/$defs/OwnerReference"
+    },
+
+    "workflows": {
+      "type": "array",
+      "description": "Workflow collection owned exclusively by this Composition.",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/WorkflowReference"
+      }
+    },
+
+    "defaultWorkflowId": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/Identity"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+
+    "agents": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/AgentReference"
+      }
+    },
+
+    "capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/CapabilityReference"
+      }
+    },
+
+    "memory": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/MemoryReference"
+      }
+    },
+
+    "artifacts": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/ArtifactReference"
+      }
+    },
+
+    "configuration": {
+      "$ref": "#/$defs/Configuration"
+    },
+
+    "metadata": {
+      "$ref": "#/$defs/Metadata"
+    },
+
+    "labels": {
+      "$ref": "#/$defs/LabelMap"
+    },
+
+    "timestamps": {
+      "$ref": "#/$defs/Timestamp"
+    },
+
+    "audit": {
+      "$ref": "#/$defs/AuditInformation"
+    },
+
+    "extensions": {
+      "type": "object",
+      "description": "Reserved extension point for future MMOS versions and plugins.",
+      "additionalProperties": true
+    }
+
+  }
+
+  ,
+
+  "examples": [
+    {
+      "compositionId": "cmp_news_production",
+      "projectId": "prj_media_platform",
+      "parentCompositionId": null,
+
+      "name": "news-production",
+      "displayName": "Daily News Production",
+      "description": "End-to-end editorial workflow for AI-assisted news production.",
+
+      "version": "1.0.0",
+      "status": "active",
+
+      "owner": {
+        "projectId": "prj_media_platform",
+        "organizationId": "org_multimedia",
+        "workspaceId": "ws_editorial"
+      },
+
+      "workflows": [
+        {
+          "workflowId": "wf_generate_news",
+          "name": "Generate News",
+          "displayName": "Generate Article",
+          "version": "1.0.0",
+          "role": "primary",
+          "enabled": true
+        },
+        {
+          "workflowId": "wf_editor_review",
+          "name": "Editorial Review",
+          "displayName": "Editor Approval",
+          "version": "1.0.0",
+          "role": "approval",
+          "enabled": true
+        },
+        {
+          "workflowId": "wf_publish",
+          "name": "Publish",
+          "displayName": "Publication",
+          "version": "1.0.0",
+          "role": "secondary",
+          "enabled": true
+        }
+      ],
+
+      "defaultWorkflowId": "wf_generate_news",
+
+      "agents": [
+        {
+          "agentId": "agt_writer",
+          "role": "writer",
+          "optional": false
+        },
+        {
+          "agentId": "agt_editor",
+          "role": "editor",
+          "optional": false
+        },
+        {
+          "agentId": "agt_publisher",
+          "role": "publisher",
+          "optional": true
+        }
+      ],
+
+      "capabilities": [
+        {
+          "capabilityId": "cap_llm_generate",
+          "required": true
+        },
+        {
+          "capabilityId": "cap_fact_check",
+          "required": true
+        },
+        {
+          "capabilityId": "cap_publish_cms",
+          "required": true
+        }
+      ],
+
+      "memory": [
+        {
+          "memoryId": "mem_editorial",
+          "type": "knowledge",
+          "readOnly": true
+        },
+        {
+          "memoryId": "mem_session",
+          "type": "session",
+          "readOnly": false
+        }
+      ],
+
+      "artifacts": [
+        {
+          "artifactId": "art_article",
+          "kind": "document",
+          "required": true
+        },
+        {
+          "artifactId": "art_thumbnail",
+          "kind": "image",
+          "required": false
+        }
+      ],
+
+      "configuration": {
+        "executionPolicy": {
+          "mode": "sequential",
+          "timeoutSeconds": 3600,
+          "allowHumanIntervention": true,
+          "retryPolicy": {
+            "enabled": true,
+            "maxAttempts": 3,
+            "backoffStrategy": "exponential",
+            "delaySeconds": 5
+          }
+        },
+
+        "defaultRuntime": {
+          "runtimeId": "run_default",
+          "provider": "MMOS Runtime",
+          "version": "1.0.0"
+        },
+
+        "environment": "production",
+
+        "variables": {
+          "language": "id",
+          "autoPublish": false,
+          "priority": "high"
+        }
+      },
+
+      "metadata": {
+        "department": "editorial",
+        "businessUnit": "news",
+        "template": "daily-news"
+      },
+
+      "labels": {
+        "category": "news",
+        "priority": "high",
+        "country": "id"
+      },
+
+      "timestamps": {
+        "createdAt": "2026-07-10T08:00:00Z",
+        "updatedAt": "2026-07-10T09:15:00Z",
+        "archivedAt": null,
+        "deletedAt": null
+      },
+
+      "audit": {
+        "createdBy": "admin",
+        "updatedBy": "editor",
+        "archivedBy": null,
+        "deletedBy": null
+      },
+
+      "extensions": {}
+    }
+  ]
+}

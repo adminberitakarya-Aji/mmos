@@ -1,0 +1,651 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mmos.dev/specs/schemas/runtime.schema.json",
+  "title": "MMOS Runtime Schema",
+  "description": "JSON Schema for MMOS Runtime object.",
+  "type": "object",
+
+  "$comment": "MMOS v1.0 - Rich Domain Schema",
+
+  "$defs": {
+
+    "Identity": {
+      "type": "string",
+      "description": "Immutable object identifier.",
+      "minLength": 4,
+      "maxLength": 128,
+      "pattern": "^[a-z]{3}_[A-Za-z0-9_-]+$"
+    },
+
+    "SemanticVersion": {
+      "type": "string",
+      "description": "Semantic Version.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+
+    "UUID": {
+      "type": "string",
+      "format": "uuid"
+    },
+
+    "DateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+
+    "NonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+
+    "Description": {
+      "type": "string",
+      "maxLength": 5000
+    },
+
+    "Metadata": {
+      "type": "object",
+      "description": "Runtime metadata.",
+      "additionalProperties": true
+    },
+
+    "LabelMap": {
+      "type": "object",
+      "description": "Runtime labels.",
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 256
+      }
+    },
+
+    "Timestamp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+
+        "createdAt": {
+          "$ref": "#/$defs/DateTime"
+        },
+
+        "updatedAt": {
+          "$ref": "#/$defs/DateTime"
+        },
+
+        "registeredAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+
+        "lastHeartbeatAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+
+      }
+    },
+
+    "AuditInformation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "createdBy"
+      ],
+      "properties": {
+
+        "createdBy": {
+          "type": "string",
+          "minLength": 1
+        },
+
+        "updatedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+
+      }
+    },
+
+    "RuntimeStatus": {
+      "type": "string",
+      "description": "Current Runtime availability.",
+      "enum": [
+        "offline",
+        "starting",
+        "ready",
+        "busy",
+        "degraded",
+        "maintenance",
+        "stopping",
+        "terminated"
+      ]
+    },
+
+    "RuntimeType": {
+      "type": "string",
+      "enum": [
+        "local",
+        "container",
+        "kubernetes",
+        "serverless",
+        "edge",
+        "remote"
+      ]
+    }
+
+  }
+}
+
+,
+    "ProviderReference": {
+      "type": "object",
+      "description": "Provider served by this Runtime.",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+
+        "name": {
+          "type": "string"
+        },
+
+        "type": {
+          "type": "string",
+          "enum": [
+            "llm",
+            "embedding",
+            "image",
+            "video",
+            "audio",
+            "storage",
+            "custom"
+          ]
+        },
+
+        "region": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+
+        "endpoint": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uri"
+        }
+
+      }
+    },
+
+    "SupportedModel": {
+      "type": "object",
+      "description": "AI model supported by this Runtime.",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+
+        "name": {
+          "type": "string"
+        },
+
+        "version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+
+        "family": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+
+        "multimodal": {
+          "type": "boolean",
+          "default": false
+        }
+
+      }
+    },
+
+    "RuntimeCapability": {
+      "type": "object",
+      "description": "Capability exposed by the Runtime.",
+      "additionalProperties": false,
+      "required": [
+        "capabilityId"
+      ],
+      "properties": {
+
+        "capabilityId": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        }
+
+      }
+    },
+
+    "ResourceLimit": {
+      "type": "object",
+      "description": "Runtime resource limits.",
+      "additionalProperties": false,
+      "properties": {
+
+        "maxConcurrentExecutions": {
+          "type": "integer",
+          "minimum": 1
+        },
+
+        "maxMemoryMB": {
+          "type": "integer",
+          "minimum": 1
+        },
+
+        "maxCpuCores": {
+          "type": "number",
+          "minimum": 0.1
+        },
+
+        "maxExecutionSeconds": {
+          "type": "integer",
+          "minimum": 1
+        }
+
+      }
+    },
+
+    "NetworkPolicy": {
+      "type": "object",
+      "description": "Network access policy.",
+      "additionalProperties": false,
+      "properties": {
+
+        "allowInternet": {
+          "type": "boolean",
+          "default": false
+        },
+
+        "allowPrivateNetwork": {
+          "type": "boolean",
+          "default": false
+        },
+
+        "allowWebhook": {
+          "type": "boolean",
+          "default": true
+        }
+
+      }
+    },
+
+    "StoragePolicy": {
+      "type": "object",
+      "description": "Storage policy for Runtime.",
+      "additionalProperties": false,
+      "properties": {
+
+        "persistentStorage": {
+          "type": "boolean",
+          "default": false
+        },
+
+        "temporaryStorageMB": {
+          "type": "integer",
+          "minimum": 0
+        },
+
+        "artifactRetentionDays": {
+          "type": "integer",
+          "minimum": 0
+        }
+
+      }
+    },
+
+    "HealthCheck": {
+      "type": "object",
+      "description": "Runtime health configuration.",
+      "additionalProperties": false,
+      "properties": {
+
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "intervalSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 30
+        },
+
+        "timeoutSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 5
+        }
+
+      }
+    },
+
+    "SecurityPolicy": {
+      "type": "object",
+      "description": "Runtime security configuration.",
+      "additionalProperties": false,
+      "properties": {
+
+        "sandboxed": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "allowSecrets": {
+          "type": "boolean",
+          "default": false
+        },
+
+        "encryptedCommunication": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "auditLogging": {
+          "type": "boolean",
+          "default": true
+        }
+
+      }
+    },
+
+    "Observability": {
+      "type": "object",
+      "description": "Observability configuration.",
+      "additionalProperties": false,
+      "properties": {
+
+        "metricsEnabled": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "loggingEnabled": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "tracingEnabled": {
+          "type": "boolean",
+          "default": true
+        }
+
+      }
+    }
+
+    ,
+
+  "additionalProperties": false,
+
+  "required": [
+    "runtimeId",
+    "name",
+    "type",
+    "version",
+    "status",
+    "provider",
+    "supportedModels",
+    "capabilities",
+    "resourceLimits",
+    "healthCheck",
+    "security",
+    "observability",
+    "timestamps",
+    "audit"
+  ],
+
+  "properties": {
+
+    "runtimeId": {
+      "$ref": "#/$defs/Identity"
+    },
+
+    "name": {
+      "$ref": "#/$defs/NonEmptyString"
+    },
+
+    "displayName": {
+      "type": "string",
+      "maxLength": 256
+    },
+
+    "description": {
+      "$ref": "#/$defs/Description"
+    },
+
+    "version": {
+      "$ref": "#/$defs/SemanticVersion"
+    },
+
+    "status": {
+      "$ref": "#/$defs/RuntimeStatus"
+    },
+
+    "type": {
+      "$ref": "#/$defs/RuntimeType"
+    },
+
+    "provider": {
+      "$ref": "#/$defs/ProviderReference"
+    },
+
+    "supportedModels": {
+      "type": "array",
+      "description": "Models available through this Runtime.",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/SupportedModel"
+      }
+    },
+
+    "capabilities": {
+      "type": "array",
+      "description": "Capabilities supported by this Runtime.",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/RuntimeCapability"
+      }
+    },
+
+    "resourceLimits": {
+      "$ref": "#/$defs/ResourceLimit"
+    },
+
+    "networkPolicy": {
+      "$ref": "#/$defs/NetworkPolicy"
+    },
+
+    "storagePolicy": {
+      "$ref": "#/$defs/StoragePolicy"
+    },
+
+    "healthCheck": {
+      "$ref": "#/$defs/HealthCheck"
+    },
+
+    "security": {
+      "$ref": "#/$defs/SecurityPolicy"
+    },
+
+    "observability": {
+      "$ref": "#/$defs/Observability"
+    },
+
+    "metadata": {
+      "$ref": "#/$defs/Metadata"
+    },
+
+    "labels": {
+      "$ref": "#/$defs/LabelMap"
+    },
+
+    "timestamps": {
+      "$ref": "#/$defs/Timestamp"
+    },
+
+    "audit": {
+      "$ref": "#/$defs/AuditInformation"
+    },
+
+    "extensions": {
+      "type": "object",
+      "description": "Reserved extension point for future MMOS versions, providers, and plugins.",
+      "additionalProperties": true
+    }
+
+  }
+
+  ,
+
+  "examples": [
+    {
+      "runtimeId": "run_default",
+
+      "name": "default-runtime",
+      "displayName": "MMOS Default Runtime",
+      "description": "Default AI Runtime responsible for executing production workloads across supported providers.",
+
+      "version": "1.0.0",
+      "status": "ready",
+      "type": "container",
+
+      "provider": {
+        "name": "OpenAI",
+        "type": "llm",
+        "region": "global",
+        "endpoint": "https://api.openai.com/v1"
+      },
+
+      "supportedModels": [
+        {
+          "name": "gpt-5.5",
+          "version": null,
+          "family": "gpt",
+          "multimodal": true
+        },
+        {
+          "name": "gpt-5.5-mini",
+          "version": null,
+          "family": "gpt",
+          "multimodal": true
+        }
+      ],
+
+      "capabilities": [
+        {
+          "capabilityId": "cap_text_generation",
+          "enabled": true
+        },
+        {
+          "capabilityId": "cap_image_analysis",
+          "enabled": true
+        },
+        {
+          "capabilityId": "cap_tool_calling",
+          "enabled": true
+        }
+      ],
+
+      "resourceLimits": {
+        "maxConcurrentExecutions": 500,
+        "maxMemoryMB": 8192,
+        "maxCpuCores": 8,
+        "maxExecutionSeconds": 1800
+      },
+
+      "networkPolicy": {
+        "allowInternet": true,
+        "allowPrivateNetwork": false,
+        "allowWebhook": true
+      },
+
+      "storagePolicy": {
+        "persistentStorage": false,
+        "temporaryStorageMB": 2048,
+        "artifactRetentionDays": 30
+      },
+
+      "healthCheck": {
+        "enabled": true,
+        "intervalSeconds": 30,
+        "timeoutSeconds": 5
+      },
+
+      "security": {
+        "sandboxed": true,
+        "allowSecrets": false,
+        "encryptedCommunication": true,
+        "auditLogging": true
+      },
+
+      "observability": {
+        "metricsEnabled": true,
+        "loggingEnabled": true,
+        "tracingEnabled": true
+      },
+
+      "metadata": {
+        "environment": "production",
+        "cluster": "primary",
+        "orchestrator": "kubernetes"
+      },
+
+      "labels": {
+        "tier": "production",
+        "region": "global",
+        "deployment": "cluster"
+      },
+
+      "timestamps": {
+        "createdAt": "2026-07-10T08:00:00Z",
+        "updatedAt": "2026-07-10T08:30:00Z",
+        "registeredAt": "2026-07-10T08:01:00Z",
+        "lastHeartbeatAt": "2026-07-10T08:29:58Z"
+      },
+
+      "audit": {
+        "createdBy": "system",
+        "updatedBy": "runtime-controller"
+      },
+
+      "extensions": {}
+    }
+  ]
+}

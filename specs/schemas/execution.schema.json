@@ -1,0 +1,628 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mmos.dev/specs/schemas/execution.schema.json",
+  "title": "MMOS Execution Schema",
+  "description": "JSON Schema for MMOS Execution object.",
+  "type": "object",
+
+  "$comment": "MMOS v1.0 - Rich Domain Schema",
+
+  "$defs": {
+
+    "Identity": {
+      "type": "string",
+      "description": "Immutable object identifier.",
+      "minLength": 4,
+      "maxLength": 128,
+      "pattern": "^[a-z]{3}_[A-Za-z0-9_-]+$"
+    },
+
+    "SemanticVersion": {
+      "type": "string",
+      "description": "Semantic Version.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+
+    "UUID": {
+      "type": "string",
+      "format": "uuid"
+    },
+
+    "DateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+
+    "NonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+
+    "Description": {
+      "type": "string",
+      "maxLength": 5000
+    },
+
+    "Metadata": {
+      "type": "object",
+      "description": "Execution metadata.",
+      "additionalProperties": true
+    },
+
+    "LabelMap": {
+      "type": "object",
+      "description": "Execution labels.",
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 256
+      }
+    },
+
+    "Timestamp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+
+        "createdAt": {
+          "$ref": "#/$defs/DateTime"
+        },
+
+        "updatedAt": {
+          "$ref": "#/$defs/DateTime"
+        },
+
+        "startedAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+
+        "completedAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+
+      }
+    },
+
+    "AuditInformation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "createdBy"
+      ],
+      "properties": {
+
+        "createdBy": {
+          "type": "string",
+          "minLength": 1
+        },
+
+        "updatedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+
+      }
+    },
+
+    "ExecutionStatus": {
+      "type": "string",
+      "description": "Current runtime state of the Execution.",
+      "enum": [
+        "pending",
+        "queued",
+        "starting",
+        "running",
+        "waiting",
+        "paused",
+        "retrying",
+        "completed",
+        "failed",
+        "cancelled",
+        "timed_out"
+      ]
+    },
+
+    "ExecutionMode": {
+      "type": "string",
+      "enum": [
+        "sequential",
+        "parallel",
+        "distributed"
+      ]
+    }
+
+  }
+}
+
+,
+    "CompositionReference": {
+      "type": "object",
+      "description": "Composition that initiated this Execution.",
+      "additionalProperties": false,
+      "required": [
+        "compositionId"
+      ],
+      "properties": {
+
+        "compositionId": {
+          "$ref": "#/$defs/Identity"
+        }
+
+      }
+    },
+
+    "WorkflowReference": {
+      "type": "object",
+      "description": "Workflow being executed.",
+      "additionalProperties": false,
+      "required": [
+        "workflowId"
+      ],
+      "properties": {
+
+        "workflowId": {
+          "$ref": "#/$defs/Identity"
+        }
+
+      }
+    },
+
+    "TaskReference": {
+      "type": "object",
+      "description": "Task executed by this Execution instance.",
+      "additionalProperties": false,
+      "required": [
+        "taskId"
+      ],
+      "properties": {
+
+        "taskId": {
+          "$ref": "#/$defs/Identity"
+        }
+
+      }
+    },
+
+    "AgentReference": {
+      "type": "object",
+      "description": "Agent selected for execution.",
+      "additionalProperties": false,
+      "required": [
+        "agentId"
+      ],
+      "properties": {
+
+        "agentId": {
+          "$ref": "#/$defs/Identity"
+        }
+
+      }
+    },
+
+    "RuntimeReference": {
+      "type": "object",
+      "description": "Runtime responsible for executing the Agent.",
+      "additionalProperties": false,
+      "required": [
+        "runtimeId"
+      ],
+      "properties": {
+
+        "runtimeId": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "provider": {
+          "type": "string"
+        },
+
+        "version": {
+          "$ref": "#/$defs/SemanticVersion"
+        }
+
+      }
+    },
+
+    "ExecutionInput": {
+      "type": "object",
+      "description": "Resolved execution input after Workflow and Task mapping.",
+      "additionalProperties": true
+    },
+
+    "ExecutionOutput": {
+      "type": "object",
+      "description": "Execution output produced by the Runtime.",
+      "additionalProperties": true
+    },
+
+    "ExecutionMetrics": {
+      "type": "object",
+      "description": "Runtime metrics collected during execution.",
+      "additionalProperties": false,
+      "properties": {
+
+        "durationMilliseconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+
+        "queueMilliseconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+
+        "promptTokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+
+        "completionTokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+
+        "totalTokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+
+        "estimatedCost": {
+          "type": "number",
+          "minimum": 0
+        }
+
+      }
+    },
+
+    "ExecutionError": {
+      "type": "object",
+      "description": "Runtime error information.",
+      "additionalProperties": false,
+      "properties": {
+
+        "code": {
+          "type": "string"
+        },
+
+        "message": {
+          "type": "string"
+        },
+
+        "retryable": {
+          "type": "boolean"
+        },
+
+        "providerCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+
+      }
+    },
+
+    "ExecutionLog": {
+      "type": "object",
+      "description": "Execution log entry.",
+      "additionalProperties": false,
+      "required": [
+        "timestamp",
+        "level",
+        "message"
+      ],
+      "properties": {
+
+        "timestamp": {
+          "$ref": "#/$defs/DateTime"
+        },
+
+        "level": {
+          "type": "string",
+          "enum": [
+            "debug",
+            "info",
+            "warning",
+            "error"
+          ]
+        },
+
+        "message": {
+          "type": "string"
+        }
+
+      }
+    },
+
+    "RetryInformation": {
+      "type": "object",
+      "description": "Retry state for this Execution.",
+      "additionalProperties": false,
+      "properties": {
+
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+
+        "maxAttempts": {
+          "type": "integer",
+          "minimum": 1
+        },
+
+        "nextRetryAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+
+      }
+    }
+
+    ,
+
+  "additionalProperties": false,
+
+  "required": [
+    "executionId",
+    "composition",
+    "workflow",
+    "task",
+    "agent",
+    "runtime",
+    "status",
+    "mode",
+    "input",
+    "timestamps",
+    "audit"
+  ],
+
+  "properties": {
+
+    "executionId": {
+      "$ref": "#/$defs/Identity"
+    },
+
+    "composition": {
+      "$ref": "#/$defs/CompositionReference"
+    },
+
+    "workflow": {
+      "$ref": "#/$defs/WorkflowReference"
+    },
+
+    "task": {
+      "$ref": "#/$defs/TaskReference"
+    },
+
+    "agent": {
+      "$ref": "#/$defs/AgentReference"
+    },
+
+    "runtime": {
+      "$ref": "#/$defs/RuntimeReference"
+    },
+
+    "status": {
+      "$ref": "#/$defs/ExecutionStatus"
+    },
+
+    "mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+
+    "input": {
+      "$ref": "#/$defs/ExecutionInput"
+    },
+
+    "output": {
+      "$ref": "#/$defs/ExecutionOutput"
+    },
+
+    "metrics": {
+      "$ref": "#/$defs/ExecutionMetrics"
+    },
+
+    "retry": {
+      "$ref": "#/$defs/RetryInformation"
+    },
+
+    "error": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ExecutionError"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+
+    "logs": {
+      "type": "array",
+      "description": "Execution log entries generated during runtime.",
+      "items": {
+        "$ref": "#/$defs/ExecutionLog"
+      }
+    },
+
+    "parentExecutionId": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/Identity"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+
+    "childExecutions": {
+      "type": "array",
+      "description": "Child executions created by this execution (parallel, loop, subworkflow, etc.).",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/Identity"
+      }
+    },
+
+    "metadata": {
+      "$ref": "#/$defs/Metadata"
+    },
+
+    "labels": {
+      "$ref": "#/$defs/LabelMap"
+    },
+
+    "timestamps": {
+      "$ref": "#/$defs/Timestamp"
+    },
+
+    "audit": {
+      "$ref": "#/$defs/AuditInformation"
+    },
+
+    "extensions": {
+      "type": "object",
+      "description": "Reserved extension point for future MMOS versions and plugins.",
+      "additionalProperties": true
+    }
+
+  }
+
+  ,
+
+  "examples": [
+    {
+      "executionId": "exe_generate_article_001",
+
+      "composition": {
+        "compositionId": "cmp_news_production"
+      },
+
+      "workflow": {
+        "workflowId": "wf_news_production"
+      },
+
+      "task": {
+        "taskId": "tsk_generate_article"
+      },
+
+      "agent": {
+        "agentId": "agt_writer"
+      },
+
+      "runtime": {
+        "runtimeId": "run_default",
+        "provider": "MMOS Runtime",
+        "version": "1.0.0"
+      },
+
+      "status": "completed",
+      "mode": "sequential",
+
+      "input": {
+        "topic": "Artificial Intelligence",
+        "language": "id",
+        "tone": "professional",
+        "maxWords": 1200
+      },
+
+      "output": {
+        "title": "Artificial Intelligence Drives New Innovation",
+        "article": "Generated article content...",
+        "summary": "AI continues transforming multiple industries.",
+        "wordCount": 1187
+      },
+
+      "metrics": {
+        "durationMilliseconds": 4521,
+        "queueMilliseconds": 215,
+        "promptTokens": 1264,
+        "completionTokens": 1821,
+        "totalTokens": 3085,
+        "estimatedCost": 0.0825
+      },
+
+      "retry": {
+        "attempt": 1,
+        "maxAttempts": 3,
+        "nextRetryAt": null
+      },
+
+      "error": null,
+
+      "logs": [
+        {
+          "timestamp": "2026-07-10T09:00:01Z",
+          "level": "info",
+          "message": "Execution started."
+        },
+        {
+          "timestamp": "2026-07-10T09:00:02Z",
+          "level": "info",
+          "message": "Runtime allocated."
+        },
+        {
+          "timestamp": "2026-07-10T09:00:05Z",
+          "level": "info",
+          "message": "Agent execution completed."
+        }
+      ],
+
+      "parentExecutionId": null,
+
+      "childExecutions": [],
+
+      "metadata": {
+        "environment": "production",
+        "department": "editorial",
+        "priority": "high"
+      },
+
+      "labels": {
+        "project": "news",
+        "language": "id",
+        "region": "indonesia"
+      },
+
+      "timestamps": {
+        "createdAt": "2026-07-10T09:00:00Z",
+        "updatedAt": "2026-07-10T09:00:06Z",
+        "startedAt": "2026-07-10T09:00:01Z",
+        "completedAt": "2026-07-10T09:00:06Z"
+      },
+
+      "audit": {
+        "createdBy": "workflow-engine",
+        "updatedBy": "runtime-engine"
+      },
+
+      "extensions": {}
+    }
+  ]
+}

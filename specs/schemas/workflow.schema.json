@@ -1,0 +1,734 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mmos.dev/specs/schemas/workflow.schema.json",
+  "title": "MMOS Workflow Schema",
+  "description": "JSON Schema for MMOS Workflow object.",
+  "type": "object",
+
+  "$comment": "MMOS v1.0 - Rich Domain Schema",
+
+  "$defs": {
+
+    "Identity": {
+      "type": "string",
+      "description": "Immutable object identifier.",
+      "minLength": 4,
+      "maxLength": 128,
+      "pattern": "^[a-z]{3}_[A-Za-z0-9_-]+$"
+    },
+
+    "SemanticVersion": {
+      "type": "string",
+      "description": "Semantic Version.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+
+    "UUID": {
+      "type": "string",
+      "format": "uuid"
+    },
+
+    "DateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+
+    "NonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+
+    "Description": {
+      "type": "string",
+      "maxLength": 5000
+    },
+
+    "Metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+
+    "LabelMap": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 256
+      }
+    },
+
+    "Timestamp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+
+        "createdAt": {
+          "$ref": "#/$defs/DateTime"
+        },
+
+        "updatedAt": {
+          "$ref": "#/$defs/DateTime"
+        },
+
+        "archivedAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+
+        "deletedAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+
+      }
+    },
+
+    "AuditInformation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "createdBy"
+      ],
+      "properties": {
+
+        "createdBy": {
+          "type": "string",
+          "minLength": 1
+        },
+
+        "updatedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+
+        "archivedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+
+        "deletedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+
+      }
+    },
+
+    "WorkflowStatus": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "ready",
+        "active",
+        "paused",
+        "completed",
+        "failed",
+        "cancelled",
+        "archived",
+        "deleted"
+      ]
+    },
+
+    "CompositionReference": {
+      "type": "object",
+      "description": "Workflow owner. Every Workflow belongs to exactly one Composition (ADR-019).",
+      "additionalProperties": false,
+      "required": [
+        "compositionId"
+      ],
+      "properties": {
+
+        "compositionId": {
+          "$ref": "#/$defs/Identity"
+        }
+
+      }
+    }
+
+  }
+}
+
+,
+    "TaskReference": {
+      "type": "object",
+      "description": "Reference to a Task contained in this Workflow.",
+      "additionalProperties": false,
+      "required": [
+        "taskId",
+        "name",
+        "type",
+        "order"
+      ],
+      "properties": {
+
+        "taskId": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "name": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+
+        "type": {
+          "type": "string",
+          "enum": [
+            "agent",
+            "capability",
+            "human",
+            "system",
+            "condition",
+            "parallel",
+            "loop",
+            "subworkflow"
+          ]
+        },
+
+        "order": {
+          "type": "integer",
+          "minimum": 1
+        },
+
+        "optional": {
+          "type": "boolean",
+          "default": false
+        }
+
+      }
+    },
+
+    "TriggerDefinition": {
+      "type": "object",
+      "description": "Defines how a Workflow is started.",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+
+        "type": {
+          "type": "string",
+          "enum": [
+            "manual",
+            "api",
+            "event",
+            "schedule",
+            "webhook"
+          ]
+        },
+
+        "eventName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+
+        "cron": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+
+      }
+    },
+
+    "ConditionDefinition": {
+      "type": "object",
+      "description": "Conditional rule evaluated during Workflow execution.",
+      "additionalProperties": false,
+      "required": [
+        "expression"
+      ],
+      "properties": {
+
+        "expression": {
+          "type": "string"
+        },
+
+        "language": {
+          "type": "string",
+          "enum": [
+            "jsonpath",
+            "jq",
+            "spel",
+            "javascript",
+            "expression"
+          ],
+          "default": "expression"
+        }
+
+      }
+    },
+
+    "TransitionDefinition": {
+      "type": "object",
+      "description": "Defines Workflow transitions between Tasks.",
+      "additionalProperties": false,
+      "required": [
+        "from",
+        "to"
+      ],
+      "properties": {
+
+        "from": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "to": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "condition": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+
+      }
+    },
+
+    "InputDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+
+        "name": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+
+        "type": {
+          "type": "string"
+        },
+
+        "required": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "defaultValue": {}
+      }
+    },
+
+    "OutputDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+
+        "name": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+
+        "type": {
+          "type": "string"
+        },
+
+        "description": {
+          "type": "string"
+        }
+
+      }
+    },
+
+    "RetryPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "maxAttempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 3
+        },
+
+        "backoffStrategy": {
+          "type": "string",
+          "enum": [
+            "fixed",
+            "linear",
+            "exponential"
+          ],
+          "default": "exponential"
+        },
+
+        "delaySeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 5
+        }
+
+      }
+    },
+
+    "ErrorHandlingPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+
+        "onFailure": {
+          "type": "string",
+          "enum": [
+            "stop",
+            "continue",
+            "retry",
+            "fallback",
+            "manual"
+          ],
+          "default": "retry"
+        },
+
+        "fallbackWorkflowId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+
+      }
+    },
+
+    "ExecutionPolicy": {
+      "type": "object",
+      "description": "Workflow execution policy.",
+      "additionalProperties": false,
+      "properties": {
+
+        "mode": {
+          "type": "string",
+          "enum": [
+            "sequential",
+            "parallel",
+            "mixed"
+          ],
+          "default": "sequential"
+        },
+
+        "timeoutSeconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+
+        "allowHumanIntervention": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "retryPolicy": {
+          "$ref": "#/$defs/RetryPolicy"
+        },
+
+        "errorHandling": {
+          "$ref": "#/$defs/ErrorHandlingPolicy"
+        }
+
+      }
+    }
+,
+
+  "additionalProperties": false,
+
+  "required": [
+    "workflowId",
+    "composition",
+    "name",
+    "version",
+    "status",
+    "tasks",
+    "executionPolicy",
+    "timestamps",
+    "audit"
+  ],
+
+  "properties": {
+
+    "workflowId": {
+      "$ref": "#/$defs/Identity"
+    },
+
+    "composition": {
+      "$ref": "#/$defs/CompositionReference"
+    },
+
+    "name": {
+      "$ref": "#/$defs/NonEmptyString"
+    },
+
+    "displayName": {
+      "type": "string",
+      "maxLength": 256
+    },
+
+    "description": {
+      "$ref": "#/$defs/Description"
+    },
+
+    "version": {
+      "$ref": "#/$defs/SemanticVersion"
+    },
+
+    "status": {
+      "$ref": "#/$defs/WorkflowStatus"
+    },
+
+    "trigger": {
+      "$ref": "#/$defs/TriggerDefinition"
+    },
+
+    "tasks": {
+      "type": "array",
+      "description": "Ordered task collection executed by this Workflow.",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/TaskReference"
+      }
+    },
+
+    "transitions": {
+      "type": "array",
+      "description": "Task transition graph.",
+      "items": {
+        "$ref": "#/$defs/TransitionDefinition"
+      }
+    },
+
+    "conditions": {
+      "type": "array",
+      "description": "Reusable workflow conditions.",
+      "items": {
+        "$ref": "#/$defs/ConditionDefinition"
+      }
+    },
+
+    "inputs": {
+      "type": "array",
+      "description": "Workflow input contract.",
+      "items": {
+        "$ref": "#/$defs/InputDefinition"
+      }
+    },
+
+    "outputs": {
+      "type": "array",
+      "description": "Workflow output contract.",
+      "items": {
+        "$ref": "#/$defs/OutputDefinition"
+      }
+    },
+
+    "executionPolicy": {
+      "$ref": "#/$defs/ExecutionPolicy"
+    },
+
+    "metadata": {
+      "$ref": "#/$defs/Metadata"
+    },
+
+    "labels": {
+      "$ref": "#/$defs/LabelMap"
+    },
+
+    "timestamps": {
+      "$ref": "#/$defs/Timestamp"
+    },
+
+    "audit": {
+      "$ref": "#/$defs/AuditInformation"
+    },
+
+    "extensions": {
+      "type": "object",
+      "description": "Reserved extension point for future MMOS versions and plugins.",
+      "additionalProperties": true
+    }
+
+  }
+
+,
+
+  "examples": [
+    {
+      "workflowId": "wf_news_production",
+
+      "composition": {
+        "compositionId": "cmp_news_production"
+      },
+
+      "name": "news-production-workflow",
+      "displayName": "News Production Workflow",
+      "description": "Workflow for AI-assisted news production from draft generation to publication.",
+
+      "version": "1.0.0",
+      "status": "active",
+
+      "trigger": {
+        "type": "manual",
+        "eventName": null,
+        "cron": null
+      },
+
+      "tasks": [
+        {
+          "taskId": "tsk_generate_article",
+          "name": "Generate Article",
+          "type": "agent",
+          "order": 1,
+          "optional": false
+        },
+        {
+          "taskId": "tsk_fact_check",
+          "name": "Fact Check",
+          "type": "capability",
+          "order": 2,
+          "optional": false
+        },
+        {
+          "taskId": "tsk_editor_review",
+          "name": "Editorial Review",
+          "type": "human",
+          "order": 3,
+          "optional": false
+        },
+        {
+          "taskId": "tsk_publish",
+          "name": "Publish",
+          "type": "system",
+          "order": 4,
+          "optional": false
+        }
+      ],
+
+      "transitions": [
+        {
+          "from": "tsk_generate_article",
+          "to": "tsk_fact_check",
+          "condition": null
+        },
+        {
+          "from": "tsk_fact_check",
+          "to": "tsk_editor_review",
+          "condition": null
+        },
+        {
+          "from": "tsk_editor_review",
+          "to": "tsk_publish",
+          "condition": "approved == true"
+        }
+      ],
+
+      "conditions": [
+        {
+          "expression": "approved == true",
+          "language": "expression"
+        }
+      ],
+
+      "inputs": [
+        {
+          "name": "topic",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "language",
+          "type": "string",
+          "required": true,
+          "defaultValue": "id"
+        }
+      ],
+
+      "outputs": [
+        {
+          "name": "article",
+          "type": "document",
+          "description": "Generated news article."
+        },
+        {
+          "name": "thumbnail",
+          "type": "image",
+          "description": "Generated article thumbnail."
+        }
+      ],
+
+      "executionPolicy": {
+        "mode": "sequential",
+        "timeoutSeconds": 1800,
+        "allowHumanIntervention": true,
+        "retryPolicy": {
+          "enabled": true,
+          "maxAttempts": 3,
+          "backoffStrategy": "exponential",
+          "delaySeconds": 5
+        },
+        "errorHandling": {
+          "onFailure": "retry",
+          "fallbackWorkflowId": null
+        }
+      },
+
+      "metadata": {
+        "department": "editorial",
+        "template": "daily-news"
+      },
+
+      "labels": {
+        "category": "news",
+        "priority": "high"
+      },
+
+      "timestamps": {
+        "createdAt": "2026-07-10T08:00:00Z",
+        "updatedAt": "2026-07-10T09:00:00Z",
+        "archivedAt": null,
+        "deletedAt": null
+      },
+
+      "audit": {
+        "createdBy": "admin",
+        "updatedBy": "editor",
+        "archivedBy": null,
+        "deletedBy": null
+      },
+
+      "extensions": {}
+    }
+  ]
+}
+
+

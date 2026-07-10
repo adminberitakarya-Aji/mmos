@@ -1,0 +1,516 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mmos.dev/specs/schemas/event.schema.json",
+  "title": "MMOS Event Schema",
+  "description": "JSON Schema for MMOS Event object.",
+  "type": "object",
+
+  "$comment": "MMOS v1.0 - Rich Domain Schema",
+
+  "$defs": {
+
+    "Identity": {
+      "type": "string",
+      "description": "Immutable object identifier.",
+      "minLength": 4,
+      "maxLength": 128,
+      "pattern": "^[a-z]{3}_[A-Za-z0-9_-]+$"
+    },
+
+    "SemanticVersion": {
+      "type": "string",
+      "description": "Semantic Version.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+
+    "UUID": {
+      "type": "string",
+      "format": "uuid"
+    },
+
+    "DateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+
+    "NonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+
+    "Description": {
+      "type": "string",
+      "maxLength": 5000
+    },
+
+    "Metadata": {
+      "type": "object",
+      "description": "Event metadata.",
+      "additionalProperties": true
+    },
+
+    "LabelMap": {
+      "type": "object",
+      "description": "Event labels.",
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 256
+      }
+    },
+
+    "Timestamp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "occurredAt"
+      ],
+      "properties": {
+
+        "occurredAt": {
+          "$ref": "#/$defs/DateTime"
+        },
+
+        "receivedAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+
+        "processedAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+
+      }
+    },
+
+    "AuditInformation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "emittedBy"
+      ],
+      "properties": {
+
+        "emittedBy": {
+          "type": "string",
+          "minLength": 1
+        },
+
+        "processedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+
+      }
+    },
+
+    "EventStatus": {
+      "type": "string",
+      "description": "Lifecycle status of an Event.",
+      "enum": [
+        "emitted",
+        "received",
+        "processing",
+        "processed",
+        "failed",
+        "dead-letter"
+      ]
+    },
+
+    "EventType": {
+      "type": "string",
+      "description": "Logical category of Event.",
+      "enum": [
+        "domain",
+        "system",
+        "execution",
+        "workflow",
+        "agent",
+        "runtime",
+        "memory",
+        "artifact",
+        "capability",
+        "integration",
+        "custom"
+      ]
+    }
+
+  }
+}
+
+,
+    "EventPayload": {
+      "type": "object",
+      "description": "Business payload carried by the Event.",
+      "additionalProperties": true
+    },
+
+    "EventSource": {
+      "type": "object",
+      "description": "Origin of the Event.",
+      "additionalProperties": false,
+      "properties": {
+
+        "compositionId": {
+          "oneOf": [
+            { "$ref": "#/$defs/Identity" },
+            { "type": "null" }
+          ]
+        },
+
+        "workflowId": {
+          "oneOf": [
+            { "$ref": "#/$defs/Identity" },
+            { "type": "null" }
+          ]
+        },
+
+        "executionId": {
+          "oneOf": [
+            { "$ref": "#/$defs/Identity" },
+            { "type": "null" }
+          ]
+        },
+
+        "taskId": {
+          "oneOf": [
+            { "$ref": "#/$defs/Identity" },
+            { "type": "null" }
+          ]
+        },
+
+        "agentId": {
+          "oneOf": [
+            { "$ref": "#/$defs/Identity" },
+            { "type": "null" }
+          ]
+        },
+
+        "runtimeId": {
+          "oneOf": [
+            { "$ref": "#/$defs/Identity" },
+            { "type": "null" }
+          ]
+        }
+
+      }
+    },
+
+    "EventCorrelation": {
+      "type": "object",
+      "description": "Correlation information for distributed execution.",
+      "additionalProperties": false,
+      "properties": {
+
+        "correlationId": {
+          "$ref": "#/$defs/UUID"
+        },
+
+        "causationId": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/UUID"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+
+        "parentEventId": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Identity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+
+      }
+    },
+
+    "EventDelivery": {
+      "type": "object",
+      "description": "Delivery information for messaging infrastructure.",
+      "additionalProperties": false,
+      "properties": {
+
+        "sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+
+        "partitionKey": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+
+        "retryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        }
+
+      }
+    },
+
+    "EventReference": {
+      "type": "object",
+      "description": "Reference to related Events.",
+      "additionalProperties": false,
+      "required": [
+        "eventId"
+      ],
+      "properties": {
+
+        "eventId": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "relationship": {
+          "type": "string",
+          "enum": [
+            "caused-by",
+            "follows",
+            "duplicates",
+            "compensates",
+            "related"
+          ]
+        }
+
+      }
+    },
+
+    "EventPolicy": {
+      "type": "object",
+      "description": "Operational policy of the Event.",
+      "additionalProperties": false,
+      "properties": {
+
+        "persistent": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "replayable": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "auditable": {
+          "type": "boolean",
+          "default": true
+        }
+
+      }
+    }
+
+    ,
+
+  "additionalProperties": false,
+
+  "required": [
+    "eventId",
+    "name",
+    "type",
+    "status",
+    "payload",
+    "source",
+    "correlation",
+    "policy",
+    "timestamps",
+    "audit"
+  ],
+
+  "properties": {
+
+    "eventId": {
+      "$ref": "#/$defs/Identity"
+    },
+
+    "name": {
+      "$ref": "#/$defs/NonEmptyString"
+    },
+
+    "displayName": {
+      "type": "string",
+      "maxLength": 256
+    },
+
+    "description": {
+      "$ref": "#/$defs/Description"
+    },
+
+    "version": {
+      "$ref": "#/$defs/SemanticVersion"
+    },
+
+    "type": {
+      "$ref": "#/$defs/EventType"
+    },
+
+    "status": {
+      "$ref": "#/$defs/EventStatus"
+    },
+
+    "payload": {
+      "$ref": "#/$defs/EventPayload"
+    },
+
+    "source": {
+      "$ref": "#/$defs/EventSource"
+    },
+
+    "correlation": {
+      "$ref": "#/$defs/EventCorrelation"
+    },
+
+    "delivery": {
+      "$ref": "#/$defs/EventDelivery"
+    },
+
+    "references": {
+      "type": "array",
+      "description": "Relationships to other Events.",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/EventReference"
+      }
+    },
+
+    "policy": {
+      "$ref": "#/$defs/EventPolicy"
+    },
+
+    "metadata": {
+      "$ref": "#/$defs/Metadata"
+    },
+
+    "labels": {
+      "$ref": "#/$defs/LabelMap"
+    },
+
+    "timestamps": {
+      "$ref": "#/$defs/Timestamp"
+    },
+
+    "audit": {
+      "$ref": "#/$defs/AuditInformation"
+    },
+
+    "extensions": {
+      "type": "object",
+      "description": "Reserved extension point for future MMOS versions, event buses, brokers, integrations, and plugins.",
+      "additionalProperties": true
+    }
+
+  }
+
+  ,
+
+  "examples": [
+    {
+      "eventId": "evt_execution_completed",
+
+      "name": "ExecutionCompleted",
+      "displayName": "Execution Completed",
+      "description": "Emitted when an Execution successfully finishes.",
+
+      "version": "1.0.0",
+
+      "type": "execution",
+      "status": "processed",
+
+      "payload": {
+        "result": "success",
+        "durationMs": 8423,
+        "artifactsProduced": [
+          "art_news_article_001",
+          "art_cover_image_001"
+        ],
+        "memoryUpdated": true
+      },
+
+      "source": {
+        "compositionId": "cmp_news_production",
+        "workflowId": "wf_news_production",
+        "executionId": "exe_generate_article_001",
+        "taskId": "tsk_generate_article",
+        "agentId": "agt_writer",
+        "runtimeId": "run_default"
+      },
+
+      "correlation": {
+        "correlationId": "550e8400-e29b-41d4-a716-446655440000",
+        "causationId": "550e8400-e29b-41d4-a716-446655440001",
+        "parentEventId": "evt_execution_started"
+      },
+
+      "delivery": {
+        "sequence": 127,
+        "partitionKey": "cmp_news_production",
+        "retryCount": 0
+      },
+
+      "references": [
+        {
+          "eventId": "evt_execution_started",
+          "relationship": "follows"
+        },
+        {
+          "eventId": "evt_artifact_created",
+          "relationship": "caused-by"
+        }
+      ],
+
+      "policy": {
+        "persistent": true,
+        "replayable": true,
+        "auditable": true
+      },
+
+      "metadata": {
+        "environment": "production",
+        "service": "execution-engine",
+        "tenant": "default"
+      },
+
+      "labels": {
+        "domain": "execution",
+        "priority": "normal",
+        "result": "success"
+      },
+
+      "timestamps": {
+        "occurredAt": "2026-07-10T09:30:00Z",
+        "receivedAt": "2026-07-10T09:30:00Z",
+        "processedAt": "2026-07-10T09:30:01Z"
+      },
+
+      "audit": {
+        "emittedBy": "execution-engine",
+        "processedBy": "event-bus"
+      },
+
+      "extensions": {}
+    }
+  ]
+}

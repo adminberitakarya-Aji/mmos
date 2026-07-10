@@ -1,0 +1,624 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mmos.dev/specs/schemas/artifact.schema.json",
+  "title": "MMOS Artifact Schema",
+  "description": "JSON Schema for MMOS Artifact object.",
+  "type": "object",
+
+  "$comment": "MMOS v1.0 - Rich Domain Schema",
+
+  "$defs": {
+
+    "Identity": {
+      "type": "string",
+      "description": "Immutable object identifier.",
+      "minLength": 4,
+      "maxLength": 128,
+      "pattern": "^[a-z]{3}_[A-Za-z0-9_-]+$"
+    },
+
+    "SemanticVersion": {
+      "type": "string",
+      "description": "Semantic Version.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+
+    "UUID": {
+      "type": "string",
+      "format": "uuid"
+    },
+
+    "DateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+
+    "NonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+
+    "Description": {
+      "type": "string",
+      "maxLength": 5000
+    },
+
+    "Metadata": {
+      "type": "object",
+      "description": "Artifact metadata.",
+      "additionalProperties": true
+    },
+
+    "LabelMap": {
+      "type": "object",
+      "description": "Artifact labels.",
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 256
+      }
+    },
+
+    "Timestamp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+
+        "createdAt": {
+          "$ref": "#/$defs/DateTime"
+        },
+
+        "updatedAt": {
+          "$ref": "#/$defs/DateTime"
+        },
+
+        "publishedAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+
+        "deletedAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+
+      }
+    },
+
+    "AuditInformation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "createdBy"
+      ],
+      "properties": {
+
+        "createdBy": {
+          "type": "string",
+          "minLength": 1
+        },
+
+        "updatedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+
+        "deletedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+
+      }
+    },
+
+    "ArtifactStatus": {
+      "type": "string",
+      "description": "Lifecycle status of the Artifact.",
+      "enum": [
+        "draft",
+        "generated",
+        "validated",
+        "approved",
+        "published",
+        "archived",
+        "deleted"
+      ]
+    },
+
+    "ArtifactType": {
+      "type": "string",
+      "description": "Logical type of Artifact.",
+      "enum": [
+        "text",
+        "markdown",
+        "html",
+        "image",
+        "audio",
+        "video",
+        "document",
+        "dataset",
+        "model",
+        "prompt",
+        "template",
+        "report",
+        "archive",
+        "custom"
+      ]
+    }
+
+  }
+}
+
+,
+    "ArtifactContent": {
+      "type": "object",
+      "description": "Logical content of the Artifact.",
+      "additionalProperties": true
+    },
+
+    "StorageReference": {
+      "type": "object",
+      "description": "Reference to the physical storage location.",
+      "additionalProperties": false,
+      "required": [
+        "uri"
+      ],
+      "properties": {
+
+        "uri": {
+          "type": "string",
+          "format": "uri"
+        },
+
+        "storageType": {
+          "type": "string",
+          "enum": [
+            "filesystem",
+            "object-storage",
+            "database",
+            "git",
+            "cdn",
+            "custom"
+          ]
+        },
+
+        "provider": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+
+        "checksum": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+
+      }
+    },
+
+    "MediaInformation": {
+      "type": "object",
+      "description": "Media-specific information.",
+      "additionalProperties": false,
+      "properties": {
+
+        "mimeType": {
+          "type": "string"
+        },
+
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+
+        "encoding": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+
+        "language": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+
+      }
+    },
+
+    "ArtifactSource": {
+      "type": "object",
+      "description": "Source object that produced this Artifact.",
+      "additionalProperties": false,
+      "properties": {
+
+        "executionId": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Identity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+
+        "workflowId": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Identity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+
+        "taskId": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Identity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+
+        "agentId": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Identity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+
+      }
+    },
+
+    "ArtifactVersion": {
+      "type": "object",
+      "description": "Artifact version information.",
+      "additionalProperties": false,
+      "required": [
+        "version"
+      ],
+      "properties": {
+
+        "version": {
+          "$ref": "#/$defs/SemanticVersion"
+        },
+
+        "previousArtifactId": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Identity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+
+      }
+    },
+
+    "ArtifactRelationship": {
+      "type": "object",
+      "description": "Relationship to another Artifact.",
+      "additionalProperties": false,
+      "required": [
+        "artifactId",
+        "relationship"
+      ],
+      "properties": {
+
+        "artifactId": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "relationship": {
+          "type": "string",
+          "enum": [
+            "derived-from",
+            "generated-from",
+            "references",
+            "contains",
+            "thumbnail-of",
+            "preview-of",
+            "attachment-of"
+          ]
+        }
+
+      }
+    },
+
+    "RetentionPolicy": {
+      "type": "object",
+      "description": "Artifact retention policy.",
+      "additionalProperties": false,
+      "properties": {
+
+        "retainDays": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+
+        "archiveAfterDays": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+
+        "autoDelete": {
+          "type": "boolean",
+          "default": false
+        }
+
+      }
+    },
+
+    "ArtifactPolicy": {
+      "type": "object",
+      "description": "Operational policy for Artifact.",
+      "additionalProperties": false,
+      "properties": {
+
+        "immutable": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "versioned": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "publishable": {
+          "type": "boolean",
+          "default": true
+        }
+
+      }
+    }
+
+    ,
+
+  "additionalProperties": false,
+
+  "required": [
+    "artifactId",
+    "name",
+    "type",
+    "status",
+    "content",
+    "source",
+    "storage",
+    "policy",
+    "timestamps",
+    "audit"
+  ],
+
+  "properties": {
+
+    "artifactId": {
+      "$ref": "#/$defs/Identity"
+    },
+
+    "name": {
+      "$ref": "#/$defs/NonEmptyString"
+    },
+
+    "displayName": {
+      "type": "string",
+      "maxLength": 256
+    },
+
+    "description": {
+      "$ref": "#/$defs/Description"
+    },
+
+    "version": {
+      "$ref": "#/$defs/ArtifactVersion"
+    },
+
+    "status": {
+      "$ref": "#/$defs/ArtifactStatus"
+    },
+
+    "type": {
+      "$ref": "#/$defs/ArtifactType"
+    },
+
+    "content": {
+      "$ref": "#/$defs/ArtifactContent"
+    },
+
+    "storage": {
+      "$ref": "#/$defs/StorageReference"
+    },
+
+    "media": {
+      "$ref": "#/$defs/MediaInformation"
+    },
+
+    "source": {
+      "$ref": "#/$defs/ArtifactSource"
+    },
+
+    "relationships": {
+      "type": "array",
+      "description": "Relationships with other Artifacts.",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/ArtifactRelationship"
+      }
+    },
+
+    "retention": {
+      "$ref": "#/$defs/RetentionPolicy"
+    },
+
+    "policy": {
+      "$ref": "#/$defs/ArtifactPolicy"
+    },
+
+    "metadata": {
+      "$ref": "#/$defs/Metadata"
+    },
+
+    "labels": {
+      "$ref": "#/$defs/LabelMap"
+    },
+
+    "timestamps": {
+      "$ref": "#/$defs/Timestamp"
+    },
+
+    "audit": {
+      "$ref": "#/$defs/AuditInformation"
+    },
+
+    "extensions": {
+      "type": "object",
+      "description": "Reserved extension point for future MMOS versions, storage providers, content processors, and plugins.",
+      "additionalProperties": true
+    }
+
+  }
+
+  ,
+
+  "examples": [
+    {
+      "artifactId": "art_news_article_001",
+
+      "name": "news-article-ai-regulation",
+      "displayName": "AI Regulation News Article",
+      "description": "Final published article generated by the editorial workflow.",
+
+      "version": {
+        "version": "1.0.0",
+        "previousArtifactId": null
+      },
+
+      "status": "published",
+      "type": "markdown",
+
+      "content": {
+        "title": "Government Introduces New AI Regulation",
+        "language": "id",
+        "body": "# Government Introduces New AI Regulation\n\nArticle content...",
+        "summary": "Summary of the article.",
+        "keywords": [
+          "AI",
+          "Regulation",
+          "Technology"
+        ]
+      },
+
+      "storage": {
+        "uri": "https://storage.example.com/articles/art_news_article_001.md",
+        "storageType": "object-storage",
+        "provider": "MinIO",
+        "checksum": "sha256:8d5f6d5f7a1f5b6e9a8d1234567890abcdef1234567890abcdef1234567890ab"
+      },
+
+      "media": {
+        "mimeType": "text/markdown",
+        "sizeBytes": 28416,
+        "encoding": "utf-8",
+        "language": "id"
+      },
+
+      "source": {
+        "executionId": "exe_generate_article_001",
+        "workflowId": "wf_news_production",
+        "taskId": "tsk_generate_article",
+        "agentId": "agt_writer"
+      },
+
+      "relationships": [
+        {
+          "artifactId": "art_prompt_001",
+          "relationship": "generated-from"
+        },
+        {
+          "artifactId": "art_cover_image_001",
+          "relationship": "contains"
+        }
+      ],
+
+      "retention": {
+        "retainDays": 3650,
+        "archiveAfterDays": 365,
+        "autoDelete": false
+      },
+
+      "policy": {
+        "immutable": true,
+        "versioned": true,
+        "publishable": true
+      },
+
+      "metadata": {
+        "department": "editorial",
+        "category": "technology",
+        "owner": "newsroom"
+      },
+
+      "labels": {
+        "publication": "beritakarya",
+        "language": "id",
+        "status": "published"
+      },
+
+      "timestamps": {
+        "createdAt": "2026-07-10T09:10:00Z",
+        "updatedAt": "2026-07-10T09:12:00Z",
+        "publishedAt": "2026-07-10T09:15:00Z",
+        "deletedAt": null
+      },
+
+      "audit": {
+        "createdBy": "workflow-engine",
+        "updatedBy": "editor",
+        "deletedBy": null
+      },
+
+      "extensions": {}
+    }
+  ]
+}

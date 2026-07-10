@@ -1,0 +1,682 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mmos.dev/specs/schemas/capability.schema.json",
+  "title": "MMOS Capability Schema",
+  "description": "JSON Schema for MMOS Capability object.",
+  "type": "object",
+
+  "$comment": "MMOS v1.0 - Rich Domain Schema",
+
+  "$defs": {
+
+    "Identity": {
+      "type": "string",
+      "description": "Immutable object identifier.",
+      "minLength": 4,
+      "maxLength": 128,
+      "pattern": "^[a-z]{3}_[A-Za-z0-9_-]+$"
+    },
+
+    "SemanticVersion": {
+      "type": "string",
+      "description": "Semantic Version.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+
+    "UUID": {
+      "type": "string",
+      "format": "uuid"
+    },
+
+    "DateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+
+    "NonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+
+    "Description": {
+      "type": "string",
+      "maxLength": 5000
+    },
+
+    "Metadata": {
+      "type": "object",
+      "description": "Capability metadata.",
+      "additionalProperties": true
+    },
+
+    "LabelMap": {
+      "type": "object",
+      "description": "Capability labels.",
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 256
+      }
+    },
+
+    "Timestamp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+
+        "createdAt": {
+          "$ref": "#/$defs/DateTime"
+        },
+
+        "updatedAt": {
+          "$ref": "#/$defs/DateTime"
+        },
+
+        "deprecatedAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+
+        "deletedAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+
+      }
+    },
+
+    "AuditInformation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "createdBy"
+      ],
+      "properties": {
+
+        "createdBy": {
+          "type": "string",
+          "minLength": 1
+        },
+
+        "updatedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+
+        "deprecatedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+
+        "deletedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+
+      }
+    },
+
+    "CapabilityStatus": {
+      "type": "string",
+      "description": "Lifecycle status of the Capability.",
+      "enum": [
+        "draft",
+        "active",
+        "deprecated",
+        "disabled",
+        "deleted"
+      ]
+    },
+
+    "CapabilityType": {
+      "type": "string",
+      "description": "Logical category of the Capability.",
+      "enum": [
+        "llm",
+        "tool",
+        "memory",
+        "workflow",
+        "agent",
+        "reasoning",
+        "vision",
+        "audio",
+        "video",
+        "embedding",
+        "search",
+        "integration",
+        "system",
+        "custom"
+      ]
+    }
+
+  }
+}
+
+,
+    "InputSchema": {
+      "type": "object",
+      "description": "Input contract accepted by the Capability.",
+      "additionalProperties": true
+    },
+
+    "OutputSchema": {
+      "type": "object",
+      "description": "Output contract produced by the Capability.",
+      "additionalProperties": true
+    },
+
+    "ParameterDefinition": {
+      "type": "object",
+      "description": "Configurable parameter exposed by the Capability.",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+
+        "name": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+
+        "type": {
+          "type": "string",
+          "enum": [
+            "string",
+            "integer",
+            "number",
+            "boolean",
+            "array",
+            "object"
+          ]
+        },
+
+        "description": {
+          "type": "string"
+        },
+
+        "required": {
+          "type": "boolean",
+          "default": false
+        },
+
+        "defaultValue": {}
+      }
+    },
+
+    "CapabilityImplementation": {
+      "type": "object",
+      "description": "Implementation candidates for this Capability.",
+      "additionalProperties": false,
+      "properties": {
+
+        "agentId": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Identity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+
+        "runtimeId": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Identity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+
+        "pluginId": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Identity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+
+      }
+    },
+
+    "SecurityRequirement": {
+      "type": "object",
+      "description": "Security requirements for invoking the Capability.",
+      "additionalProperties": false,
+      "properties": {
+
+        "authenticationRequired": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "authorizationRequired": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "allowedRoles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        }
+
+      }
+    },
+
+    "ExecutionRequirement": {
+      "type": "object",
+      "description": "Execution requirements of the Capability.",
+      "additionalProperties": false,
+      "properties": {
+
+        "supportsStreaming": {
+          "type": "boolean",
+          "default": false
+        },
+
+        "supportsParallelExecution": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "supportsRetry": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "supportsHumanApproval": {
+          "type": "boolean",
+          "default": false
+        }
+
+      }
+    },
+
+    "DependencyReference": {
+      "type": "object",
+      "description": "Capability dependency.",
+      "additionalProperties": false,
+      "required": [
+        "capabilityId"
+      ],
+      "properties": {
+
+        "capabilityId": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "minimumVersion": {
+          "$ref": "#/$defs/SemanticVersion"
+        },
+
+        "optional": {
+          "type": "boolean",
+          "default": false
+        }
+
+      }
+    },
+
+    "Compatibility": {
+      "type": "object",
+      "description": "Compatibility information for Runtime and Provider.",
+      "additionalProperties": false,
+      "properties": {
+
+        "supportedProviders": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+
+        "supportedRuntimeTypes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "local",
+              "container",
+              "kubernetes",
+              "serverless",
+              "edge",
+              "remote"
+            ]
+          }
+        }
+
+      }
+    },
+
+    "CapabilityPolicy": {
+      "type": "object",
+      "description": "Operational policies for this Capability.",
+      "additionalProperties": false,
+      "properties": {
+
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "deprecated": {
+          "type": "boolean",
+          "default": false
+        },
+
+        "experimental": {
+          "type": "boolean",
+          "default": false
+        }
+
+      }
+    }
+
+    ,
+
+  "additionalProperties": false,
+
+  "required": [
+    "capabilityId",
+    "name",
+    "type",
+    "version",
+    "status",
+    "input",
+    "output",
+    "executionRequirements",
+    "securityRequirements",
+    "policy",
+    "timestamps",
+    "audit"
+  ],
+
+  "properties": {
+
+    "capabilityId": {
+      "$ref": "#/$defs/Identity"
+    },
+
+    "name": {
+      "$ref": "#/$defs/NonEmptyString"
+    },
+
+    "displayName": {
+      "type": "string",
+      "maxLength": 256
+    },
+
+    "description": {
+      "$ref": "#/$defs/Description"
+    },
+
+    "version": {
+      "$ref": "#/$defs/SemanticVersion"
+    },
+
+    "status": {
+      "$ref": "#/$defs/CapabilityStatus"
+    },
+
+    "type": {
+      "$ref": "#/$defs/CapabilityType"
+    },
+
+    "input": {
+      "$ref": "#/$defs/InputSchema"
+    },
+
+    "output": {
+      "$ref": "#/$defs/OutputSchema"
+    },
+
+    "parameters": {
+      "type": "array",
+      "description": "Configurable parameters exposed by this Capability.",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/ParameterDefinition"
+      }
+    },
+
+    "implementations": {
+      "type": "array",
+      "description": "Available implementation candidates.",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/CapabilityImplementation"
+      }
+    },
+
+    "executionRequirements": {
+      "$ref": "#/$defs/ExecutionRequirement"
+    },
+
+    "securityRequirements": {
+      "$ref": "#/$defs/SecurityRequirement"
+    },
+
+    "dependencies": {
+      "type": "array",
+      "description": "Capabilities required before this Capability can execute.",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/DependencyReference"
+      }
+    },
+
+    "compatibility": {
+      "$ref": "#/$defs/Compatibility"
+    },
+
+    "policy": {
+      "$ref": "#/$defs/CapabilityPolicy"
+    },
+
+    "metadata": {
+      "$ref": "#/$defs/Metadata"
+    },
+
+    "labels": {
+      "$ref": "#/$defs/LabelMap"
+    },
+
+    "timestamps": {
+      "$ref": "#/$defs/Timestamp"
+    },
+
+    "audit": {
+      "$ref": "#/$defs/AuditInformation"
+    },
+
+    "extensions": {
+      "type": "object",
+      "description": "Reserved extension point for future MMOS versions, plugins, and custom capability implementations.",
+      "additionalProperties": true
+    }
+
+  }
+
+  ,
+
+  "examples": [
+    {
+      "capabilityId": "cap_generate_text",
+
+      "name": "generate-text",
+      "displayName": "Generate Text",
+      "description": "Generate natural language content from structured or unstructured input.",
+
+      "version": "1.0.0",
+      "status": "active",
+      "type": "llm",
+
+      "input": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string"
+          },
+          "language": {
+            "type": "string"
+          },
+          "maxTokens": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "prompt"
+        ]
+      },
+
+      "output": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "finishReason": {
+            "type": "string"
+          }
+        }
+      },
+
+      "parameters": [
+        {
+          "name": "temperature",
+          "type": "number",
+          "description": "Sampling temperature.",
+          "required": false,
+          "defaultValue": 0.7
+        },
+        {
+          "name": "topP",
+          "type": "number",
+          "description": "Top-P sampling value.",
+          "required": false,
+          "defaultValue": 1.0
+        }
+      ],
+
+      "implementations": [
+        {
+          "agentId": "agt_writer",
+          "runtimeId": "run_default",
+          "pluginId": null
+        },
+        {
+          "agentId": "agt_local_writer",
+          "runtimeId": "run_local",
+          "pluginId": "plg_local_llm"
+        }
+      ],
+
+      "executionRequirements": {
+        "supportsStreaming": true,
+        "supportsParallelExecution": true,
+        "supportsRetry": true,
+        "supportsHumanApproval": false
+      },
+
+      "securityRequirements": {
+        "authenticationRequired": true,
+        "authorizationRequired": true,
+        "allowedRoles": [
+          "editor",
+          "administrator"
+        ]
+      },
+
+      "dependencies": [
+        {
+          "capabilityId": "cap_prompt_rendering",
+          "minimumVersion": "1.0.0",
+          "optional": false
+        }
+      ],
+
+      "compatibility": {
+        "supportedProviders": [
+          "OpenAI",
+          "Anthropic",
+          "Google",
+          "Azure OpenAI",
+          "Ollama"
+        ],
+        "supportedRuntimeTypes": [
+          "container",
+          "kubernetes",
+          "serverless",
+          "remote"
+        ]
+      },
+
+      "policy": {
+        "enabled": true,
+        "deprecated": false,
+        "experimental": false
+      },
+
+      "metadata": {
+        "category": "content-generation",
+        "domain": "editorial",
+        "owner": "platform-team"
+      },
+
+      "labels": {
+        "tier": "core",
+        "family": "text",
+        "multilingual": "true"
+      },
+
+      "timestamps": {
+        "createdAt": "2026-07-10T08:00:00Z",
+        "updatedAt": "2026-07-10T08:15:00Z",
+        "deprecatedAt": null,
+        "deletedAt": null
+      },
+
+      "audit": {
+        "createdBy": "platform-admin",
+        "updatedBy": "platform-admin",
+        "deprecatedBy": null,
+        "deletedBy": null
+      },
+
+      "extensions": {}
+    }
+  ]
+}

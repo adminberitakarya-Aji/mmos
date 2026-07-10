@@ -1,0 +1,703 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mmos.dev/specs/schemas/task.schema.json",
+  "title": "MMOS Task Schema",
+  "description": "JSON Schema for MMOS Task object.",
+  "type": "object",
+
+  "$comment": "MMOS v1.0 - Rich Domain Schema",
+
+  "$defs": {
+
+    "Identity": {
+      "type": "string",
+      "description": "Immutable object identifier.",
+      "minLength": 4,
+      "maxLength": 128,
+      "pattern": "^[a-z]{3}_[A-Za-z0-9_-]+$"
+    },
+
+    "SemanticVersion": {
+      "type": "string",
+      "description": "Semantic Version.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+
+    "UUID": {
+      "type": "string",
+      "format": "uuid"
+    },
+
+    "DateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+
+    "NonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+
+    "Description": {
+      "type": "string",
+      "maxLength": 5000
+    },
+
+    "Metadata": {
+      "type": "object",
+      "description": "User-defined metadata.",
+      "additionalProperties": true
+    },
+
+    "LabelMap": {
+      "type": "object",
+      "description": "Task labels.",
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 256
+      }
+    },
+
+    "Timestamp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "createdAt",
+        "updatedAt"
+      ],
+      "properties": {
+
+        "createdAt": {
+          "$ref": "#/$defs/DateTime"
+        },
+
+        "updatedAt": {
+          "$ref": "#/$defs/DateTime"
+        },
+
+        "archivedAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+
+        "deletedAt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+
+      }
+    },
+
+    "AuditInformation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "createdBy"
+      ],
+      "properties": {
+
+        "createdBy": {
+          "type": "string",
+          "minLength": 1
+        },
+
+        "updatedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+
+        "archivedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+
+        "deletedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+
+      }
+    },
+
+    "TaskStatus": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "ready",
+        "active",
+        "disabled",
+        "deprecated",
+        "archived",
+        "deleted"
+      ]
+    },
+
+    "WorkflowReference": {
+      "type": "object",
+      "description": "Task owner. Every Task belongs to exactly one Workflow.",
+      "additionalProperties": false,
+      "required": [
+        "workflowId"
+      ],
+      "properties": {
+
+        "workflowId": {
+          "$ref": "#/$defs/Identity"
+        }
+
+      }
+    }
+
+  }
+}
+
+,
+    "AgentReference": {
+      "type": "object",
+      "description": "Reference to the Agent responsible for executing this Task.",
+      "additionalProperties": false,
+      "required": [
+        "agentId"
+      ],
+      "properties": {
+
+        "agentId": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "role": {
+          "type": "string"
+        },
+
+        "required": {
+          "type": "boolean",
+          "default": true
+        }
+
+      }
+    },
+
+    "CapabilityReference": {
+      "type": "object",
+      "description": "Capability required by this Task.",
+      "additionalProperties": false,
+      "required": [
+        "capabilityId"
+      ],
+      "properties": {
+
+        "capabilityId": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "version": {
+          "$ref": "#/$defs/SemanticVersion"
+        },
+
+        "required": {
+          "type": "boolean",
+          "default": true
+        }
+
+      }
+    },
+
+    "RuntimeReference": {
+      "type": "object",
+      "description": "Preferred Runtime for executing this Task.",
+      "additionalProperties": false,
+      "required": [
+        "runtimeId"
+      ],
+      "properties": {
+
+        "runtimeId": {
+          "$ref": "#/$defs/Identity"
+        },
+
+        "provider": {
+          "type": "string"
+        },
+
+        "version": {
+          "$ref": "#/$defs/SemanticVersion"
+        }
+
+      }
+    },
+
+    "InputMapping": {
+      "type": "object",
+      "description": "Maps Workflow input into Task input.",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "source"
+      ],
+      "properties": {
+
+        "name": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+
+        "source": {
+          "type": "string"
+        },
+
+        "required": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "defaultValue": {}
+
+      }
+    },
+
+    "OutputMapping": {
+      "type": "object",
+      "description": "Maps Task output into Workflow context.",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "target"
+      ],
+      "properties": {
+
+        "name": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+
+        "target": {
+          "type": "string"
+        }
+
+      }
+    },
+
+    "Condition": {
+      "type": "object",
+      "description": "Condition evaluated before executing the Task.",
+      "additionalProperties": false,
+      "required": [
+        "expression"
+      ],
+      "properties": {
+
+        "expression": {
+          "type": "string"
+        },
+
+        "language": {
+          "type": "string",
+          "enum": [
+            "expression",
+            "jsonpath",
+            "jq",
+            "javascript"
+          ],
+          "default": "expression"
+        }
+
+      }
+    },
+
+    "RetryPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "maxAttempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 3
+        },
+
+        "backoffStrategy": {
+          "type": "string",
+          "enum": [
+            "fixed",
+            "linear",
+            "exponential"
+          ],
+          "default": "exponential"
+        },
+
+        "delaySeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 5
+        }
+
+      }
+    },
+
+    "TimeoutPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "timeoutSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 300
+        }
+
+      }
+    },
+
+    "HumanApprovalPolicy": {
+      "type": "object",
+      "description": "Human approval configuration for Human-in-the-Loop execution.",
+      "additionalProperties": false,
+      "properties": {
+
+        "required": {
+          "type": "boolean",
+          "default": false
+        },
+
+        "approverRole": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+
+        "timeoutSeconds": {
+          "type": "integer",
+          "minimum": 1
+        }
+
+      }
+    },
+
+    "ExecutionConstraint": {
+      "type": "object",
+      "description": "Execution constraints applied to this Task.",
+      "additionalProperties": false,
+      "properties": {
+
+        "allowParallel": {
+          "type": "boolean",
+          "default": false
+        },
+
+        "idempotent": {
+          "type": "boolean",
+          "default": true
+        },
+
+        "requiresMemory": {
+          "type": "boolean",
+          "default": false
+        },
+
+        "requiresArtifact": {
+          "type": "boolean",
+          "default": false
+        },
+
+        "requiresHumanApproval": {
+          "type": "boolean",
+          "default": false
+        }
+
+      }
+    }
+
+  ,
+
+  "additionalProperties": false,
+
+  "required": [
+    "taskId",
+    "workflow",
+    "name",
+    "type",
+    "version",
+    "status",
+    "execution",
+    "timestamps",
+    "audit"
+  ],
+
+  "properties": {
+
+    "taskId": {
+      "$ref": "#/$defs/Identity"
+    },
+
+    "workflow": {
+      "$ref": "#/$defs/WorkflowReference"
+    },
+
+    "name": {
+      "$ref": "#/$defs/NonEmptyString"
+    },
+
+    "displayName": {
+      "type": "string",
+      "maxLength": 256
+    },
+
+    "description": {
+      "$ref": "#/$defs/Description"
+    },
+
+    "version": {
+      "$ref": "#/$defs/SemanticVersion"
+    },
+
+    "status": {
+      "$ref": "#/$defs/TaskStatus"
+    },
+
+    "type": {
+      "type": "string",
+      "enum": [
+        "agent",
+        "capability",
+        "human",
+        "system",
+        "condition",
+        "parallel",
+        "loop",
+        "subworkflow"
+      ]
+    },
+
+    "agent": {
+      "$ref": "#/$defs/AgentReference"
+    },
+
+    "capability": {
+      "$ref": "#/$defs/CapabilityReference"
+    },
+
+    "runtime": {
+      "$ref": "#/$defs/RuntimeReference"
+    },
+
+    "condition": {
+      "$ref": "#/$defs/Condition"
+    },
+
+    "inputs": {
+      "type": "array",
+      "description": "Workflow context mapped into Task inputs.",
+      "items": {
+        "$ref": "#/$defs/InputMapping"
+      }
+    },
+
+    "outputs": {
+      "type": "array",
+      "description": "Task outputs mapped back into Workflow context.",
+      "items": {
+        "$ref": "#/$defs/OutputMapping"
+      }
+    },
+
+    "execution": {
+      "type": "object",
+      "description": "Execution behavior configuration for this Task.",
+      "additionalProperties": false,
+      "properties": {
+
+        "retryPolicy": {
+          "$ref": "#/$defs/RetryPolicy"
+        },
+
+        "timeoutPolicy": {
+          "$ref": "#/$defs/TimeoutPolicy"
+        },
+
+        "humanApproval": {
+          "$ref": "#/$defs/HumanApprovalPolicy"
+        },
+
+        "constraints": {
+          "$ref": "#/$defs/ExecutionConstraint"
+        }
+
+      }
+    },
+
+    "metadata": {
+      "$ref": "#/$defs/Metadata"
+    },
+
+    "labels": {
+      "$ref": "#/$defs/LabelMap"
+    },
+
+    "timestamps": {
+      "$ref": "#/$defs/Timestamp"
+    },
+
+    "audit": {
+      "$ref": "#/$defs/AuditInformation"
+    },
+
+    "extensions": {
+      "type": "object",
+      "description": "Reserved extension point for future MMOS versions and plugins.",
+      "additionalProperties": true
+    }
+
+  }  
+
+  ,
+
+  "examples": [
+    {
+      "taskId": "tsk_generate_article",
+
+      "workflow": {
+        "workflowId": "wf_news_production"
+      },
+
+      "name": "generate-article",
+      "displayName": "Generate Article",
+      "description": "Generate a news article using an AI Agent.",
+
+      "version": "1.0.0",
+      "status": "active",
+      "type": "agent",
+
+      "agent": {
+        "agentId": "agt_writer",
+        "role": "writer",
+        "required": true
+      },
+
+      "capability": {
+        "capabilityId": "cap_generate_text",
+        "version": "1.0.0",
+        "required": true
+      },
+
+      "runtime": {
+        "runtimeId": "run_default",
+        "provider": "MMOS Runtime",
+        "version": "1.0.0"
+      },
+
+      "condition": {
+        "expression": "context.topic != null",
+        "language": "expression"
+      },
+
+      "inputs": [
+        {
+          "name": "topic",
+          "source": "$.workflow.input.topic",
+          "required": true
+        },
+        {
+          "name": "language",
+          "source": "$.workflow.input.language",
+          "required": true,
+          "defaultValue": "id"
+        }
+      ],
+
+      "outputs": [
+        {
+          "name": "article",
+          "target": "$.workflow.output.article"
+        },
+        {
+          "name": "summary",
+          "target": "$.workflow.output.summary"
+        }
+      ],
+
+      "execution": {
+        "retryPolicy": {
+          "enabled": true,
+          "maxAttempts": 3,
+          "backoffStrategy": "exponential",
+          "delaySeconds": 5
+        },
+
+        "timeoutPolicy": {
+          "enabled": true,
+          "timeoutSeconds": 600
+        },
+
+        "humanApproval": {
+          "required": false,
+          "approverRole": null,
+          "timeoutSeconds": 3600
+        },
+
+        "constraints": {
+          "allowParallel": false,
+          "idempotent": true,
+          "requiresMemory": true,
+          "requiresArtifact": false,
+          "requiresHumanApproval": false
+        }
+      },
+
+      "metadata": {
+        "department": "editorial",
+        "template": "daily-news",
+        "priority": "high"
+      },
+
+      "labels": {
+        "category": "news",
+        "engine": "writer",
+        "language": "id"
+      },
+
+      "timestamps": {
+        "createdAt": "2026-07-10T08:00:00Z",
+        "updatedAt": "2026-07-10T08:30:00Z",
+        "archivedAt": null,
+        "deletedAt": null
+      },
+
+      "audit": {
+        "createdBy": "admin",
+        "updatedBy": "editor",
+        "archivedBy": null,
+        "deletedBy": null
+      },
+
+      "extensions": {}
+    }
+  ]
+}

@@ -164,12 +164,8 @@
         }
 
       }
-    }
+    },
 
-  }
-}
-
-,
     "TaskReference": {
       "type": "object",
       "description": "Reference to a Task contained in this Workflow.",
@@ -181,15 +177,12 @@
         "order"
       ],
       "properties": {
-
         "taskId": {
           "$ref": "#/$defs/Identity"
         },
-
         "name": {
           "$ref": "#/$defs/NonEmptyString"
         },
-
         "type": {
           "type": "string",
           "enum": [
@@ -203,20 +196,16 @@
             "subworkflow"
           ]
         },
-
         "order": {
           "type": "integer",
           "minimum": 1
         },
-
         "optional": {
           "type": "boolean",
           "default": false
         }
-
       }
     },
-
     "TriggerDefinition": {
       "type": "object",
       "description": "Defines how a Workflow is started.",
@@ -225,7 +214,6 @@
         "type"
       ],
       "properties": {
-
         "type": {
           "type": "string",
           "enum": [
@@ -236,24 +224,20 @@
             "webhook"
           ]
         },
-
         "eventName": {
           "type": [
             "string",
             "null"
           ]
         },
-
         "cron": {
           "type": [
             "string",
             "null"
           ]
         }
-
       }
     },
-
     "ConditionDefinition": {
       "type": "object",
       "description": "Conditional rule evaluated during Workflow execution.",
@@ -262,11 +246,9 @@
         "expression"
       ],
       "properties": {
-
         "expression": {
           "type": "string"
         },
-
         "language": {
           "type": "string",
           "enum": [
@@ -278,10 +260,8 @@
           ],
           "default": "expression"
         }
-
       }
     },
-
     "TransitionDefinition": {
       "type": "object",
       "description": "Defines Workflow transitions between Tasks.",
@@ -291,25 +271,20 @@
         "to"
       ],
       "properties": {
-
         "from": {
           "$ref": "#/$defs/Identity"
         },
-
         "to": {
           "$ref": "#/$defs/Identity"
         },
-
         "condition": {
           "type": [
             "string",
             "null"
           ]
         }
-
       }
     },
-
     "InputDefinition": {
       "type": "object",
       "additionalProperties": false,
@@ -318,24 +293,19 @@
         "type"
       ],
       "properties": {
-
         "name": {
           "$ref": "#/$defs/NonEmptyString"
         },
-
         "type": {
           "type": "string"
         },
-
         "required": {
           "type": "boolean",
           "default": true
         },
-
         "defaultValue": {}
       }
     },
-
     "OutputDefinition": {
       "type": "object",
       "additionalProperties": false,
@@ -344,39 +314,31 @@
         "type"
       ],
       "properties": {
-
         "name": {
           "$ref": "#/$defs/NonEmptyString"
         },
-
         "type": {
           "type": "string"
         },
-
         "description": {
           "type": "string"
         }
-
       }
     },
-
     "RetryPolicy": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-
         "enabled": {
           "type": "boolean",
           "default": true
         },
-
         "maxAttempts": {
           "type": "integer",
           "minimum": 1,
           "maximum": 100,
           "default": 3
         },
-
         "backoffStrategy": {
           "type": "string",
           "enum": [
@@ -386,21 +348,17 @@
           ],
           "default": "exponential"
         },
-
         "delaySeconds": {
           "type": "integer",
           "minimum": 0,
           "default": 5
         }
-
       }
     },
-
     "ErrorHandlingPolicy": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-
         "onFailure": {
           "type": "string",
           "enum": [
@@ -412,23 +370,19 @@
           ],
           "default": "retry"
         },
-
         "fallbackWorkflowId": {
           "type": [
             "string",
             "null"
           ]
         }
-
       }
     },
-
     "ExecutionPolicy": {
       "type": "object",
       "description": "Workflow execution policy.",
       "additionalProperties": false,
       "properties": {
-
         "mode": {
           "type": "string",
           "enum": [
@@ -438,27 +392,23 @@
           ],
           "default": "sequential"
         },
-
         "timeoutSeconds": {
           "type": "integer",
           "minimum": 1
         },
-
         "allowHumanIntervention": {
           "type": "boolean",
           "default": true
         },
-
         "retryPolicy": {
           "$ref": "#/$defs/RetryPolicy"
         },
-
         "errorHandling": {
           "$ref": "#/$defs/ErrorHandlingPolicy"
         }
-
       }
     }
+  }
 ,
 
   "additionalProperties": false,
@@ -730,5 +680,4 @@
     }
   ]
 }
-
 

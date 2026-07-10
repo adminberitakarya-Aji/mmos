@@ -147,79 +147,64 @@
         "integration",
         "custom"
       ]
-    }
+    },
 
-  }
-}
-
-,
     "EventPayload": {
       "type": "object",
       "description": "Business payload carried by the Event.",
       "additionalProperties": true
     },
-
     "EventSource": {
       "type": "object",
       "description": "Origin of the Event.",
       "additionalProperties": false,
       "properties": {
-
         "compositionId": {
           "oneOf": [
             { "$ref": "#/$defs/Identity" },
             { "type": "null" }
           ]
         },
-
         "workflowId": {
           "oneOf": [
             { "$ref": "#/$defs/Identity" },
             { "type": "null" }
           ]
         },
-
         "executionId": {
           "oneOf": [
             { "$ref": "#/$defs/Identity" },
             { "type": "null" }
           ]
         },
-
         "taskId": {
           "oneOf": [
             { "$ref": "#/$defs/Identity" },
             { "type": "null" }
           ]
         },
-
         "agentId": {
           "oneOf": [
             { "$ref": "#/$defs/Identity" },
             { "type": "null" }
           ]
         },
-
         "runtimeId": {
           "oneOf": [
             { "$ref": "#/$defs/Identity" },
             { "type": "null" }
           ]
         }
-
       }
     },
-
     "EventCorrelation": {
       "type": "object",
       "description": "Correlation information for distributed execution.",
       "additionalProperties": false,
       "properties": {
-
         "correlationId": {
           "$ref": "#/$defs/UUID"
         },
-
         "causationId": {
           "oneOf": [
             {
@@ -230,7 +215,6 @@
             }
           ]
         },
-
         "parentEventId": {
           "oneOf": [
             {
@@ -241,37 +225,30 @@
             }
           ]
         }
-
       }
     },
-
     "EventDelivery": {
       "type": "object",
       "description": "Delivery information for messaging infrastructure.",
       "additionalProperties": false,
       "properties": {
-
         "sequence": {
           "type": "integer",
           "minimum": 0
         },
-
         "partitionKey": {
           "type": [
             "string",
             "null"
           ]
         },
-
         "retryCount": {
           "type": "integer",
           "minimum": 0,
           "default": 0
         }
-
       }
     },
-
     "EventReference": {
       "type": "object",
       "description": "Reference to related Events.",
@@ -280,11 +257,9 @@
         "eventId"
       ],
       "properties": {
-
         "eventId": {
           "$ref": "#/$defs/Identity"
         },
-
         "relationship": {
           "type": "string",
           "enum": [
@@ -295,35 +270,29 @@
             "related"
           ]
         }
-
       }
     },
-
     "EventPolicy": {
       "type": "object",
       "description": "Operational policy of the Event.",
       "additionalProperties": false,
       "properties": {
-
         "persistent": {
           "type": "boolean",
           "default": true
         },
-
         "replayable": {
           "type": "boolean",
           "default": true
         },
-
         "auditable": {
           "type": "boolean",
           "default": true
         }
-
       }
     }
-
-    ,
+  }
+,
 
   "additionalProperties": false,
 

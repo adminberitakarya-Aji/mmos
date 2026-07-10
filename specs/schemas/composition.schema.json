@@ -182,12 +182,8 @@
         }
 
       }
-    }
+    },
 
-  }
-}
-
-,
     "WorkflowReference": {
       "type": "object",
       "description": "Reference to a Workflow owned by this Composition.",
@@ -199,26 +195,21 @@
         "role"
       ],
       "properties": {
-
         "workflowId": {
           "$ref": "#/$defs/Identity"
         },
-
         "name": {
           "$ref": "#/$defs/NonEmptyString"
         },
-
         "displayName": {
           "type": [
             "string",
             "null"
           ]
         },
-
         "version": {
           "$ref": "#/$defs/SemanticVersion"
         },
-
         "role": {
           "type": "string",
           "enum": [
@@ -228,15 +219,12 @@
             "fallback"
           ]
         },
-
         "enabled": {
           "type": "boolean",
           "default": true
         }
-
       }
     },
-
     "MemoryReference": {
       "type": "object",
       "description": "Reference to an attached Memory.",
@@ -246,11 +234,9 @@
         "type"
       ],
       "properties": {
-
         "memoryId": {
           "$ref": "#/$defs/Identity"
         },
-
         "type": {
           "type": "string",
           "enum": [
@@ -262,15 +248,12 @@
             "cache"
           ]
         },
-
         "readOnly": {
           "type": "boolean",
           "default": false
         }
-
       }
     },
-
     "ArtifactReference": {
       "type": "object",
       "description": "Reference to an Artifact produced or consumed by the Composition.",
@@ -280,11 +263,9 @@
         "kind"
       ],
       "properties": {
-
         "artifactId": {
           "$ref": "#/$defs/Identity"
         },
-
         "kind": {
           "type": "string",
           "enum": [
@@ -299,15 +280,12 @@
             "other"
           ]
         },
-
         "required": {
           "type": "boolean",
           "default": false
         }
-
       }
     },
-
     "CapabilityReference": {
       "type": "object",
       "description": "Reference to a Capability used by this Composition.",
@@ -316,19 +294,15 @@
         "capabilityId"
       ],
       "properties": {
-
         "capabilityId": {
           "$ref": "#/$defs/Identity"
         },
-
         "required": {
           "type": "boolean",
           "default": true
         }
-
       }
     },
-
     "AgentReference": {
       "type": "object",
       "description": "Reference to an Agent participating in this Composition.",
@@ -338,23 +312,18 @@
         "role"
       ],
       "properties": {
-
         "agentId": {
           "$ref": "#/$defs/Identity"
         },
-
         "role": {
           "type": "string"
         },
-
         "optional": {
           "type": "boolean",
           "default": false
         }
-
       }
     },
-
     "RuntimeReference": {
       "type": "object",
       "description": "Preferred Runtime for executing this Composition.",
@@ -363,39 +332,31 @@
         "runtimeId"
       ],
       "properties": {
-
         "runtimeId": {
           "$ref": "#/$defs/Identity"
         },
-
         "provider": {
           "type": "string"
         },
-
         "version": {
           "$ref": "#/$defs/SemanticVersion"
         }
-
       }
     },
-
     "RetryPolicy": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-
         "enabled": {
           "type": "boolean",
           "default": true
         },
-
         "maxAttempts": {
           "type": "integer",
           "minimum": 1,
           "maximum": 100,
           "default": 3
         },
-
         "backoffStrategy": {
           "type": "string",
           "enum": [
@@ -405,21 +366,17 @@
           ],
           "default": "exponential"
         },
-
         "delaySeconds": {
           "type": "integer",
           "minimum": 0,
           "default": 5
         }
-
       }
     },
-
     "ExecutionPolicy": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-
         "mode": {
           "type": "string",
           "enum": [
@@ -429,38 +386,30 @@
           ],
           "default": "sequential"
         },
-
         "timeoutSeconds": {
           "type": "integer",
           "minimum": 1
         },
-
         "allowHumanIntervention": {
           "type": "boolean",
           "default": true
         },
-
         "retryPolicy": {
           "$ref": "#/$defs/RetryPolicy"
         }
-
       }
     },
-
     "Configuration": {
       "type": "object",
       "description": "Composition execution configuration.",
       "additionalProperties": true,
       "properties": {
-
         "executionPolicy": {
           "$ref": "#/$defs/ExecutionPolicy"
         },
-
         "defaultRuntime": {
           "$ref": "#/$defs/RuntimeReference"
         },
-
         "environment": {
           "type": "string",
           "enum": [
@@ -471,14 +420,13 @@
           ],
           "default": "production"
         },
-
         "variables": {
           "type": "object",
           "additionalProperties": true
         }
-
       }
     }
+  }
 ,
 
   "additionalProperties": false,

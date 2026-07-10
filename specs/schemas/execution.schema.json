@@ -148,12 +148,8 @@
         "parallel",
         "distributed"
       ]
-    }
+    },
 
-  }
-}
-
-,
     "CompositionReference": {
       "type": "object",
       "description": "Composition that initiated this Execution.",
@@ -162,14 +158,11 @@
         "compositionId"
       ],
       "properties": {
-
         "compositionId": {
           "$ref": "#/$defs/Identity"
         }
-
       }
     },
-
     "WorkflowReference": {
       "type": "object",
       "description": "Workflow being executed.",
@@ -178,14 +171,11 @@
         "workflowId"
       ],
       "properties": {
-
         "workflowId": {
           "$ref": "#/$defs/Identity"
         }
-
       }
     },
-
     "TaskReference": {
       "type": "object",
       "description": "Task executed by this Execution instance.",
@@ -194,14 +184,11 @@
         "taskId"
       ],
       "properties": {
-
         "taskId": {
           "$ref": "#/$defs/Identity"
         }
-
       }
     },
-
     "AgentReference": {
       "type": "object",
       "description": "Agent selected for execution.",
@@ -210,14 +197,11 @@
         "agentId"
       ],
       "properties": {
-
         "agentId": {
           "$ref": "#/$defs/Identity"
         }
-
       }
     },
-
     "RuntimeReference": {
       "type": "object",
       "description": "Runtime responsible for executing the Agent.",
@@ -226,101 +210,80 @@
         "runtimeId"
       ],
       "properties": {
-
         "runtimeId": {
           "$ref": "#/$defs/Identity"
         },
-
         "provider": {
           "type": "string"
         },
-
         "version": {
           "$ref": "#/$defs/SemanticVersion"
         }
-
       }
     },
-
     "ExecutionInput": {
       "type": "object",
       "description": "Resolved execution input after Workflow and Task mapping.",
       "additionalProperties": true
     },
-
     "ExecutionOutput": {
       "type": "object",
       "description": "Execution output produced by the Runtime.",
       "additionalProperties": true
     },
-
     "ExecutionMetrics": {
       "type": "object",
       "description": "Runtime metrics collected during execution.",
       "additionalProperties": false,
       "properties": {
-
         "durationMilliseconds": {
           "type": "integer",
           "minimum": 0
         },
-
         "queueMilliseconds": {
           "type": "integer",
           "minimum": 0
         },
-
         "promptTokens": {
           "type": "integer",
           "minimum": 0
         },
-
         "completionTokens": {
           "type": "integer",
           "minimum": 0
         },
-
         "totalTokens": {
           "type": "integer",
           "minimum": 0
         },
-
         "estimatedCost": {
           "type": "number",
           "minimum": 0
         }
-
       }
     },
-
     "ExecutionError": {
       "type": "object",
       "description": "Runtime error information.",
       "additionalProperties": false,
       "properties": {
-
         "code": {
           "type": "string"
         },
-
         "message": {
           "type": "string"
         },
-
         "retryable": {
           "type": "boolean"
         },
-
         "providerCode": {
           "type": [
             "string",
             "null"
           ]
         }
-
       }
     },
-
     "ExecutionLog": {
       "type": "object",
       "description": "Execution log entry.",
@@ -331,11 +294,9 @@
         "message"
       ],
       "properties": {
-
         "timestamp": {
           "$ref": "#/$defs/DateTime"
         },
-
         "level": {
           "type": "string",
           "enum": [
@@ -345,30 +306,24 @@
             "error"
           ]
         },
-
         "message": {
           "type": "string"
         }
-
       }
     },
-
     "RetryInformation": {
       "type": "object",
       "description": "Retry state for this Execution.",
       "additionalProperties": false,
       "properties": {
-
         "attempt": {
           "type": "integer",
           "minimum": 1
         },
-
         "maxAttempts": {
           "type": "integer",
           "minimum": 1
         },
-
         "nextRetryAt": {
           "oneOf": [
             {
@@ -379,11 +334,10 @@
             }
           ]
         }
-
       }
     }
-
-    ,
+  }
+,
 
   "additionalProperties": false,
 

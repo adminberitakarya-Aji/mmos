@@ -148,12 +148,8 @@
         "edge",
         "remote"
       ]
-    }
+    },
 
-  }
-}
-
-,
     "ProviderReference": {
       "type": "object",
       "description": "Provider served by this Runtime.",
@@ -162,11 +158,9 @@
         "name"
       ],
       "properties": {
-
         "name": {
           "type": "string"
         },
-
         "type": {
           "type": "string",
           "enum": [
@@ -179,14 +173,12 @@
             "custom"
           ]
         },
-
         "region": {
           "type": [
             "string",
             "null"
           ]
         },
-
         "endpoint": {
           "type": [
             "string",
@@ -194,10 +186,8 @@
           ],
           "format": "uri"
         }
-
       }
     },
-
     "SupportedModel": {
       "type": "object",
       "description": "AI model supported by this Runtime.",
@@ -206,33 +196,27 @@
         "name"
       ],
       "properties": {
-
         "name": {
           "type": "string"
         },
-
         "version": {
           "type": [
             "string",
             "null"
           ]
         },
-
         "family": {
           "type": [
             "string",
             "null"
           ]
         },
-
         "multimodal": {
           "type": "boolean",
           "default": false
         }
-
       }
     },
-
     "RuntimeCapability": {
       "type": "object",
       "description": "Capability exposed by the Runtime.",
@@ -241,176 +225,141 @@
         "capabilityId"
       ],
       "properties": {
-
         "capabilityId": {
           "$ref": "#/$defs/Identity"
         },
-
         "enabled": {
           "type": "boolean",
           "default": true
         }
-
       }
     },
-
     "ResourceLimit": {
       "type": "object",
       "description": "Runtime resource limits.",
       "additionalProperties": false,
       "properties": {
-
         "maxConcurrentExecutions": {
           "type": "integer",
           "minimum": 1
         },
-
         "maxMemoryMB": {
           "type": "integer",
           "minimum": 1
         },
-
         "maxCpuCores": {
           "type": "number",
           "minimum": 0.1
         },
-
         "maxExecutionSeconds": {
           "type": "integer",
           "minimum": 1
         }
-
       }
     },
-
     "NetworkPolicy": {
       "type": "object",
       "description": "Network access policy.",
       "additionalProperties": false,
       "properties": {
-
         "allowInternet": {
           "type": "boolean",
           "default": false
         },
-
         "allowPrivateNetwork": {
           "type": "boolean",
           "default": false
         },
-
         "allowWebhook": {
           "type": "boolean",
           "default": true
         }
-
       }
     },
-
     "StoragePolicy": {
       "type": "object",
       "description": "Storage policy for Runtime.",
       "additionalProperties": false,
       "properties": {
-
         "persistentStorage": {
           "type": "boolean",
           "default": false
         },
-
         "temporaryStorageMB": {
           "type": "integer",
           "minimum": 0
         },
-
         "artifactRetentionDays": {
           "type": "integer",
           "minimum": 0
         }
-
       }
     },
-
     "HealthCheck": {
       "type": "object",
       "description": "Runtime health configuration.",
       "additionalProperties": false,
       "properties": {
-
         "enabled": {
           "type": "boolean",
           "default": true
         },
-
         "intervalSeconds": {
           "type": "integer",
           "minimum": 1,
           "default": 30
         },
-
         "timeoutSeconds": {
           "type": "integer",
           "minimum": 1,
           "default": 5
         }
-
       }
     },
-
     "SecurityPolicy": {
       "type": "object",
       "description": "Runtime security configuration.",
       "additionalProperties": false,
       "properties": {
-
         "sandboxed": {
           "type": "boolean",
           "default": true
         },
-
         "allowSecrets": {
           "type": "boolean",
           "default": false
         },
-
         "encryptedCommunication": {
           "type": "boolean",
           "default": true
         },
-
         "auditLogging": {
           "type": "boolean",
           "default": true
         }
-
       }
     },
-
     "Observability": {
       "type": "object",
       "description": "Observability configuration.",
       "additionalProperties": false,
       "properties": {
-
         "metricsEnabled": {
           "type": "boolean",
           "default": true
         },
-
         "loggingEnabled": {
           "type": "boolean",
           "default": true
         },
-
         "tracingEnabled": {
           "type": "boolean",
           "default": true
         }
-
       }
     }
-
-    ,
+  }
+,
 
   "additionalProperties": false,
 

@@ -163,12 +163,8 @@
         "human",
         "custom"
       ]
-    }
+    },
 
-  }
-}
-
-,
     "RuntimeReference": {
       "type": "object",
       "description": "Preferred Runtime used to execute this Agent.",
@@ -177,22 +173,17 @@
         "runtimeId"
       ],
       "properties": {
-
         "runtimeId": {
           "$ref": "#/$defs/Identity"
         },
-
         "provider": {
           "type": "string"
         },
-
         "version": {
           "$ref": "#/$defs/SemanticVersion"
         }
-
       }
     },
-
     "CapabilityReference": {
       "type": "object",
       "description": "Capability exposed or required by this Agent.",
@@ -201,23 +192,18 @@
         "capabilityId"
       ],
       "properties": {
-
         "capabilityId": {
           "$ref": "#/$defs/Identity"
         },
-
         "version": {
           "$ref": "#/$defs/SemanticVersion"
         },
-
         "required": {
           "type": "boolean",
           "default": true
         }
-
       }
     },
-
     "MemoryReference": {
       "type": "object",
       "description": "Memory resource available to the Agent.",
@@ -227,11 +213,9 @@
         "type"
       ],
       "properties": {
-
         "memoryId": {
           "$ref": "#/$defs/Identity"
         },
-
         "type": {
           "type": "string",
           "enum": [
@@ -243,15 +227,12 @@
             "cache"
           ]
         },
-
         "readOnly": {
           "type": "boolean",
           "default": false
         }
-
       }
     },
-
     "ProviderReference": {
       "type": "object",
       "description": "AI provider used by the Agent.",
@@ -260,21 +241,17 @@
         "provider"
       ],
       "properties": {
-
         "provider": {
           "type": "string"
         },
-
         "region": {
           "type": [
             "string",
             "null"
           ]
         }
-
       }
     },
-
     "ModelReference": {
       "type": "object",
       "description": "AI model selected for the Agent.",
@@ -283,33 +260,27 @@
         "model"
       ],
       "properties": {
-
         "model": {
           "type": "string"
         },
-
         "version": {
           "type": [
             "string",
             "null"
           ]
         },
-
         "temperature": {
           "type": "number",
           "minimum": 0,
           "maximum": 2,
           "default": 0.7
         },
-
         "maxTokens": {
           "type": "integer",
           "minimum": 1
         }
-
       }
     },
-
     "InstructionDefinition": {
       "type": "object",
       "description": "Base instruction (system prompt) for the Agent.",
@@ -318,11 +289,9 @@
         "content"
       ],
       "properties": {
-
         "content": {
           "type": "string"
         },
-
         "format": {
           "type": "string",
           "enum": [
@@ -331,10 +300,8 @@
           ],
           "default": "markdown"
         }
-
       }
     },
-
     "ToolReference": {
       "type": "object",
       "description": "Tool that may be invoked by the Agent.",
@@ -344,108 +311,87 @@
         "name"
       ],
       "properties": {
-
         "toolId": {
           "$ref": "#/$defs/Identity"
         },
-
         "name": {
           "$ref": "#/$defs/NonEmptyString"
         },
-
         "required": {
           "type": "boolean",
           "default": false
         }
-
       }
     },
-
     "ExecutionPolicy": {
       "type": "object",
       "description": "Execution behavior of the Agent.",
       "additionalProperties": false,
       "properties": {
-
         "allowParallel": {
           "type": "boolean",
           "default": true
         },
-
         "allowStreaming": {
           "type": "boolean",
           "default": true
         },
-
         "allowToolCalling": {
           "type": "boolean",
           "default": true
         },
-
         "allowHumanEscalation": {
           "type": "boolean",
           "default": true
         }
-
       }
     },
-
     "Limits": {
       "type": "object",
       "description": "Operational limits applied to the Agent.",
       "additionalProperties": false,
       "properties": {
-
         "maxExecutionSeconds": {
           "type": "integer",
           "minimum": 1,
           "default": 600
         },
-
         "maxRetries": {
           "type": "integer",
           "minimum": 0,
           "default": 3
         },
-
         "maxContextTokens": {
           "type": "integer",
           "minimum": 1
         }
-
       }
     },
-
     "SecurityPolicy": {
       "type": "object",
       "description": "Security constraints applied to the Agent.",
       "additionalProperties": false,
       "properties": {
-
         "allowExternalNetwork": {
           "type": "boolean",
           "default": false
         },
-
         "allowFileAccess": {
           "type": "boolean",
           "default": false
         },
-
         "allowSecrets": {
           "type": "boolean",
           "default": false
         },
-
         "sandboxed": {
           "type": "boolean",
           "default": true
         }
-
       }
     }
-
-    ,
+  }
+,
 
   "additionalProperties": false,
 

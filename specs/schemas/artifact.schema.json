@@ -163,18 +163,13 @@
         "archive",
         "custom"
       ]
-    }
+    },
 
-  }
-}
-
-,
     "ArtifactContent": {
       "type": "object",
       "description": "Logical content of the Artifact.",
       "additionalProperties": true
     },
-
     "StorageReference": {
       "type": "object",
       "description": "Reference to the physical storage location.",
@@ -183,12 +178,10 @@
         "uri"
       ],
       "properties": {
-
         "uri": {
           "type": "string",
           "format": "uri"
         },
-
         "storageType": {
           "type": "string",
           "enum": [
@@ -200,62 +193,51 @@
             "custom"
           ]
         },
-
         "provider": {
           "type": [
             "string",
             "null"
           ]
         },
-
         "checksum": {
           "type": [
             "string",
             "null"
           ]
         }
-
       }
     },
-
     "MediaInformation": {
       "type": "object",
       "description": "Media-specific information.",
       "additionalProperties": false,
       "properties": {
-
         "mimeType": {
           "type": "string"
         },
-
         "sizeBytes": {
           "type": "integer",
           "minimum": 0
         },
-
         "encoding": {
           "type": [
             "string",
             "null"
           ]
         },
-
         "language": {
           "type": [
             "string",
             "null"
           ]
         }
-
       }
     },
-
     "ArtifactSource": {
       "type": "object",
       "description": "Source object that produced this Artifact.",
       "additionalProperties": false,
       "properties": {
-
         "executionId": {
           "oneOf": [
             {
@@ -266,7 +248,6 @@
             }
           ]
         },
-
         "workflowId": {
           "oneOf": [
             {
@@ -277,7 +258,6 @@
             }
           ]
         },
-
         "taskId": {
           "oneOf": [
             {
@@ -288,7 +268,6 @@
             }
           ]
         },
-
         "agentId": {
           "oneOf": [
             {
@@ -299,10 +278,8 @@
             }
           ]
         }
-
       }
     },
-
     "ArtifactVersion": {
       "type": "object",
       "description": "Artifact version information.",
@@ -311,11 +288,9 @@
         "version"
       ],
       "properties": {
-
         "version": {
           "$ref": "#/$defs/SemanticVersion"
         },
-
         "previousArtifactId": {
           "oneOf": [
             {
@@ -326,10 +301,8 @@
             }
           ]
         }
-
       }
     },
-
     "ArtifactRelationship": {
       "type": "object",
       "description": "Relationship to another Artifact.",
@@ -339,11 +312,9 @@
         "relationship"
       ],
       "properties": {
-
         "artifactId": {
           "$ref": "#/$defs/Identity"
         },
-
         "relationship": {
           "type": "string",
           "enum": [
@@ -356,16 +327,13 @@
             "attachment-of"
           ]
         }
-
       }
     },
-
     "RetentionPolicy": {
       "type": "object",
       "description": "Artifact retention policy.",
       "additionalProperties": false,
       "properties": {
-
         "retainDays": {
           "type": [
             "integer",
@@ -373,7 +341,6 @@
           ],
           "minimum": 1
         },
-
         "archiveAfterDays": {
           "type": [
             "integer",
@@ -381,40 +348,33 @@
           ],
           "minimum": 1
         },
-
         "autoDelete": {
           "type": "boolean",
           "default": false
         }
-
       }
     },
-
     "ArtifactPolicy": {
       "type": "object",
       "description": "Operational policy for Artifact.",
       "additionalProperties": false,
       "properties": {
-
         "immutable": {
           "type": "boolean",
           "default": true
         },
-
         "versioned": {
           "type": "boolean",
           "default": true
         },
-
         "publishable": {
           "type": "boolean",
           "default": true
         }
-
       }
     }
-
-    ,
+  }
+,
 
   "additionalProperties": false,
 

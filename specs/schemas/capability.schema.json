@@ -168,24 +168,18 @@
         "system",
         "custom"
       ]
-    }
+    },
 
-  }
-}
-
-,
     "InputSchema": {
       "type": "object",
       "description": "Input contract accepted by the Capability.",
       "additionalProperties": true
     },
-
     "OutputSchema": {
       "type": "object",
       "description": "Output contract produced by the Capability.",
       "additionalProperties": true
     },
-
     "ParameterDefinition": {
       "type": "object",
       "description": "Configurable parameter exposed by the Capability.",
@@ -195,11 +189,9 @@
         "type"
       ],
       "properties": {
-
         "name": {
           "$ref": "#/$defs/NonEmptyString"
         },
-
         "type": {
           "type": "string",
           "enum": [
@@ -211,26 +203,21 @@
             "object"
           ]
         },
-
         "description": {
           "type": "string"
         },
-
         "required": {
           "type": "boolean",
           "default": false
         },
-
         "defaultValue": {}
       }
     },
-
     "CapabilityImplementation": {
       "type": "object",
       "description": "Implementation candidates for this Capability.",
       "additionalProperties": false,
       "properties": {
-
         "agentId": {
           "oneOf": [
             {
@@ -241,7 +228,6 @@
             }
           ]
         },
-
         "runtimeId": {
           "oneOf": [
             {
@@ -252,7 +238,6 @@
             }
           ]
         },
-
         "pluginId": {
           "oneOf": [
             {
@@ -263,26 +248,21 @@
             }
           ]
         }
-
       }
     },
-
     "SecurityRequirement": {
       "type": "object",
       "description": "Security requirements for invoking the Capability.",
       "additionalProperties": false,
       "properties": {
-
         "authenticationRequired": {
           "type": "boolean",
           "default": true
         },
-
         "authorizationRequired": {
           "type": "boolean",
           "default": true
         },
-
         "allowedRoles": {
           "type": "array",
           "items": {
@@ -290,39 +270,31 @@
           },
           "uniqueItems": true
         }
-
       }
     },
-
     "ExecutionRequirement": {
       "type": "object",
       "description": "Execution requirements of the Capability.",
       "additionalProperties": false,
       "properties": {
-
         "supportsStreaming": {
           "type": "boolean",
           "default": false
         },
-
         "supportsParallelExecution": {
           "type": "boolean",
           "default": true
         },
-
         "supportsRetry": {
           "type": "boolean",
           "default": true
         },
-
         "supportsHumanApproval": {
           "type": "boolean",
           "default": false
         }
-
       }
     },
-
     "DependencyReference": {
       "type": "object",
       "description": "Capability dependency.",
@@ -331,29 +303,23 @@
         "capabilityId"
       ],
       "properties": {
-
         "capabilityId": {
           "$ref": "#/$defs/Identity"
         },
-
         "minimumVersion": {
           "$ref": "#/$defs/SemanticVersion"
         },
-
         "optional": {
           "type": "boolean",
           "default": false
         }
-
       }
     },
-
     "Compatibility": {
       "type": "object",
       "description": "Compatibility information for Runtime and Provider.",
       "additionalProperties": false,
       "properties": {
-
         "supportedProviders": {
           "type": "array",
           "uniqueItems": true,
@@ -361,7 +327,6 @@
             "type": "string"
           }
         },
-
         "supportedRuntimeTypes": {
           "type": "array",
           "uniqueItems": true,
@@ -377,35 +342,29 @@
             ]
           }
         }
-
       }
     },
-
     "CapabilityPolicy": {
       "type": "object",
       "description": "Operational policies for this Capability.",
       "additionalProperties": false,
       "properties": {
-
         "enabled": {
           "type": "boolean",
           "default": true
         },
-
         "deprecated": {
           "type": "boolean",
           "default": false
         },
-
         "experimental": {
           "type": "boolean",
           "default": false
         }
-
       }
     }
-
-    ,
+  }
+,
 
   "additionalProperties": false,
 

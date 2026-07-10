@@ -164,12 +164,8 @@
         }
 
       }
-    }
+    },
 
-  }
-}
-
-,
     "AgentReference": {
       "type": "object",
       "description": "Reference to the Agent responsible for executing this Task.",
@@ -178,23 +174,18 @@
         "agentId"
       ],
       "properties": {
-
         "agentId": {
           "$ref": "#/$defs/Identity"
         },
-
         "role": {
           "type": "string"
         },
-
         "required": {
           "type": "boolean",
           "default": true
         }
-
       }
     },
-
     "CapabilityReference": {
       "type": "object",
       "description": "Capability required by this Task.",
@@ -203,23 +194,18 @@
         "capabilityId"
       ],
       "properties": {
-
         "capabilityId": {
           "$ref": "#/$defs/Identity"
         },
-
         "version": {
           "$ref": "#/$defs/SemanticVersion"
         },
-
         "required": {
           "type": "boolean",
           "default": true
         }
-
       }
     },
-
     "RuntimeReference": {
       "type": "object",
       "description": "Preferred Runtime for executing this Task.",
@@ -228,22 +214,17 @@
         "runtimeId"
       ],
       "properties": {
-
         "runtimeId": {
           "$ref": "#/$defs/Identity"
         },
-
         "provider": {
           "type": "string"
         },
-
         "version": {
           "$ref": "#/$defs/SemanticVersion"
         }
-
       }
     },
-
     "InputMapping": {
       "type": "object",
       "description": "Maps Workflow input into Task input.",
@@ -253,25 +234,19 @@
         "source"
       ],
       "properties": {
-
         "name": {
           "$ref": "#/$defs/NonEmptyString"
         },
-
         "source": {
           "type": "string"
         },
-
         "required": {
           "type": "boolean",
           "default": true
         },
-
         "defaultValue": {}
-
       }
     },
-
     "OutputMapping": {
       "type": "object",
       "description": "Maps Task output into Workflow context.",
@@ -281,18 +256,14 @@
         "target"
       ],
       "properties": {
-
         "name": {
           "$ref": "#/$defs/NonEmptyString"
         },
-
         "target": {
           "type": "string"
         }
-
       }
     },
-
     "Condition": {
       "type": "object",
       "description": "Condition evaluated before executing the Task.",
@@ -301,11 +272,9 @@
         "expression"
       ],
       "properties": {
-
         "expression": {
           "type": "string"
         },
-
         "language": {
           "type": "string",
           "enum": [
@@ -316,27 +285,22 @@
           ],
           "default": "expression"
         }
-
       }
     },
-
     "RetryPolicy": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-
         "enabled": {
           "type": "boolean",
           "default": true
         },
-
         "maxAttempts": {
           "type": "integer",
           "minimum": 1,
           "maximum": 100,
           "default": 3
         },
-
         "backoffStrategy": {
           "type": "string",
           "enum": [
@@ -346,96 +310,78 @@
           ],
           "default": "exponential"
         },
-
         "delaySeconds": {
           "type": "integer",
           "minimum": 0,
           "default": 5
         }
-
       }
     },
-
     "TimeoutPolicy": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-
         "enabled": {
           "type": "boolean",
           "default": true
         },
-
         "timeoutSeconds": {
           "type": "integer",
           "minimum": 1,
           "default": 300
         }
-
       }
     },
-
     "HumanApprovalPolicy": {
       "type": "object",
       "description": "Human approval configuration for Human-in-the-Loop execution.",
       "additionalProperties": false,
       "properties": {
-
         "required": {
           "type": "boolean",
           "default": false
         },
-
         "approverRole": {
           "type": [
             "string",
             "null"
           ]
         },
-
         "timeoutSeconds": {
           "type": "integer",
           "minimum": 1
         }
-
       }
     },
-
     "ExecutionConstraint": {
       "type": "object",
       "description": "Execution constraints applied to this Task.",
       "additionalProperties": false,
       "properties": {
-
         "allowParallel": {
           "type": "boolean",
           "default": false
         },
-
         "idempotent": {
           "type": "boolean",
           "default": true
         },
-
         "requiresMemory": {
           "type": "boolean",
           "default": false
         },
-
         "requiresArtifact": {
           "type": "boolean",
           "default": false
         },
-
         "requiresHumanApproval": {
           "type": "boolean",
           "default": false
         }
-
       }
     }
-
-  ,
+  }
+,
 
   "additionalProperties": false,
 

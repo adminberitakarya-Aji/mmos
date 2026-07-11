@@ -3,7 +3,7 @@
  * Loads and compiles JSON schemas from specs/schemas/
  */
 
-import AjvModule from 'ajv';
+import AjvModule from 'ajv/dist/2020.js';
 import addFormatsModule from 'ajv-formats';
 import type { ErrorObject, ValidateFunction } from 'ajv';
 import * as fs from 'fs';
@@ -44,7 +44,7 @@ export interface SchemaCompilationResult {
   error?: string;
 }
 
-const SCHEMA_DIR = path.resolve(__dirname, '../../../specs/schemas');
+const SCHEMA_DIR = path.resolve(__dirname, '../../../../specs/schemas');
 
 const SCHEMA_FILES = [
   'composition.schema.json',
@@ -54,9 +54,9 @@ const SCHEMA_FILES = [
   'capability.schema.json',
   'memory.schema.json',
   'event.schema.json',
-  'object.schema.json',
   'task.schema.json',
   'runtime.schema.json',
+  'artifact.schema.json',
 ];
 
 let ajvInstance: AjvInstance | null = null;
@@ -138,3 +138,64 @@ export function validateSchema(schemaName: string, data: unknown): ValidationRes
 export function validateOrThrow(schemaName: string, data: unknown): void {
   return createValidator().validateOrThrow(schemaName, data);
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Schema Types — Generated from specs/schemas/*.schema.json
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type {
+  SchemaIdentity,
+  SchemaSemanticVersion,
+  SchemaDateTime,
+  SchemaNonEmptyString,
+  SchemaDescription,
+  SchemaUUID,
+  SchemaMetadata,
+  SchemaLabelMap,
+  SchemaTimestamp,
+  SchemaAuditInformation,
+  SchemaStatus,
+  SchemaOwnerReference,
+  SchemaWorkflowReference,
+  SchemaMemoryReference,
+  SchemaArtifactReference,
+  SchemaCapabilityReference,
+  SchemaAgentReference,
+  SchemaRuntimeReference,
+  SchemaRetryPolicy,
+  SchemaExecutionPolicy,
+  SchemaConfiguration,
+  SchemaComposition,
+  SchemaTransitionCondition,
+  SchemaTransition,
+  SchemaWorkflow,
+  SchemaTaskInputField,
+  SchemaTaskOutputField,
+  SchemaHumanTaskConfig,
+  SchemaTaskRetryPolicy,
+  SchemaTask,
+  SchemaAgentPolicies,
+  SchemaAgent,
+  SchemaExecutionPhase,
+  SchemaExecutionStatus,
+  SchemaExecutionContext,
+  SchemaExecution,
+  SchemaRuntimeProvider,
+  SchemaRuntimeLimits,
+  SchemaRuntime,
+  SchemaCapabilityInput,
+  SchemaCapabilityOutput,
+  SchemaCapabilityAuth,
+  SchemaCapability,
+  SchemaMemoryType,
+  SchemaMemoryConfig,
+  SchemaMemory,
+  SchemaArtifactKind,
+  SchemaArtifactStorage,
+  SchemaArtifact,
+  SchemaEventPayload,
+  SchemaEvent,
+  SchemaTypeMap,
+  SchemaName,
+  SchemaType,
+} from './types.js';

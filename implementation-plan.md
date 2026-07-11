@@ -109,57 +109,57 @@ mmos/
 ### Milestone 1: SDK Core (Week 1)
 
 #### 1.1 Workspace Setup
-- [ ] Root `package.json` with workspaces config
-- [ ] `tsconfig.base.json` with strict settings
-- [ ] `packages/sdk/package.json` with dependencies: `ajv`, `ajv-formats`, `zod` (optional), `uuid`, `yaml`
-- [ ] Build config: `tsup` for ESM+CJS, `vitest` for testing
+- [x] Root `package.json` with workspaces config
+- [x] `tsconfig.base.json` with strict settings
+- [x] `packages/sdk/package.json` with dependencies: `ajv`, `ajv-formats`, `zod` (optional), `uuid`, `yaml`
+- [x] Build config: `tsup` for ESM+CJS, `vitest` for testing
 
 #### 1.2 Domain Models (`packages/sdk/src/domain/`)
-- [ ] `Composition.ts` — root aggregate (per ADR-002)
-- [ ] `Workflow.ts` — declarative workflow (per ADR-007)
-- [ ] `Task.ts` — unit of work
-- [ ] `Agent.ts` — agent definition + capabilities
-- [ ] `Execution.ts` — runtime unit (per ADR-008)
-- [ ] `Runtime.ts` — AI provider config
-- [ ] `Capability.ts` — external capability contract (per ADR-010)
-- [ ] `Memory.ts` — context provider (per ADR-011)
-- [ ] `Artifact.ts` — output artifact
-- [ ] `Event.ts` — immutable event (per ADR-012)
-- [ ] `Identity.ts` — object identity (per ADR-013)
-- [ ] `index.ts` — barrel export
+- [x] `Composition.ts` — root aggregate (per ADR-002)
+- [x] `Workflow.ts` — declarative workflow (per ADR-007)
+- [x] `Task.ts` — unit of work
+- [x] `Agent.ts` — agent definition + capabilities
+- [x] `Execution.ts` — runtime unit (per ADR-008)
+- [x] `Runtime.ts` — AI provider config
+- [x] `Capability.ts` — external capability contract (per ADR-010)
+- [x] `Memory.ts` — context provider (per ADR-011)
+- [x] `Artifact.ts` — output artifact
+- [x] `Event.ts` — immutable event (per ADR-012)
+- [x] `Identity.ts` — object identity (per ADR-013)
+- [x] `index.ts` — barrel export
 
 #### 1.3 Schema Validation (`packages/sdk/src/schema/`)
-- [ ] Load all 10 JSON schemas from `specs/schemas/*.schema.json`
-- [ ] Compile AJV instances per schema
-- [ ] `validate(schemaName, data)` function
-- [ ] TypeScript types generated from schemas (using `json-schema-to-typescript` or manual)
-- [ ] Unit tests: valid/invalid payloads per schema
+- [x] Load all 10 JSON schemas from `specs/schemas/*.schema.json`
+- [x] Compile AJV instances per schema
+- [x] `validate(schemaName, data)` function
+- [x] TypeScript types generated from schemas (`SchemaName` union, per-schema types)
+- [x] Unit tests: valid/invalid payloads per schema (all 10 schemas, self-validation)
 
 #### 1.4 Engine Interfaces (`packages/sdk/src/engine/`)
-- [ ] `RuntimeEngine` — `execute(prompt, config): Promise<Result>`
-- [ ] `CapabilityEngine` — `invoke(capability, input): Promise<Output>`
-- [ ] `MemoryEngine` — `store(key, value)`, `retrieve(query)`, `search(vector)`
-- [ ] `EventEngine` — `publish(event)`, `subscribe(type, handler)`
-- [ ] All interfaces in `engine/index.ts`
+- [x] `RuntimeEngine` — `execute(prompt, config): Promise<Result>`
+- [x] `CapabilityEngine` — `invoke(capability, input): Promise<Output>`
+- [x] `MemoryEngine` — `store(key, value)`, `retrieve(query)`, `search(vector)`
+- [x] `EventEngine` — `publish(event)`, `subscribe(type, handler)`
+- [x] All interfaces in `engine/index.ts`
 
 #### 1.5 Builders (`packages/sdk/src/builder/`)
-- [ ] `CompositionBuilder` — fluent API for Composition
-- [ ] `WorkflowBuilder` — declarative workflow construction
-- [ ] `TaskBuilder` — task with agent/capability binding
-- [ ] `AgentBuilder` — agent with capabilities, memory, runtime
-- [ ] `ExecutionBuilder` — runtime execution config
+- [x] `CompositionBuilder` — fluent API for Composition
+- [x] `WorkflowBuilder` — declarative workflow construction
+- [x] `TaskBuilder` — task with agent/capability binding
+- [x] `AgentBuilder` — agent with capabilities, memory, runtime
+- [x] `ExecutionBuilder` — runtime execution config
 
 #### 1.6 Runtime Orchestration (`packages/sdk/src/runtime/`)
-- [ ] `Orchestrator` — coordinates workflow execution
-- [ ] `ExecutionContext` — carries state, memory, events during execution
-- [ ] `ExecutionResult` — output + events + artifacts
-- [ ] Event-driven step execution (per ADR-014)
+- [x] `Orchestrator` — coordinates workflow execution
+- [x] `ExecutionContext` — carries state, memory, events during execution
+- [x] `ExecutionResult` — output + events + artifacts
+- [x] Event-driven step execution (per ADR-014)
 
 #### 1.7 SDK Entry Point & Tests
-- [ ] `packages/sdk/src/index.ts` — public API exports
-- [ ] Unit tests: domain model creation, validation, builder patterns
+- [x] `packages/sdk/src/index.ts` — public API exports
+- [x] Unit tests: domain model creation (identity, metadata, create-functions), validation (all 10 JSON schemas), builder patterns (Composition, Workflow, Task)
 - [ ] Integration test: minimal Composition → Workflow → Execution (mocked engines)
-- [ ] Build verification: `npm run build` produces `dist/` with types
+- [x] Build verification: `npm run build` produces `dist/` with types
 
 ---
 

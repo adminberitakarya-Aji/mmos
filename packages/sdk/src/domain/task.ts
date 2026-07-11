@@ -43,6 +43,7 @@ export interface Task extends Metadata {
 }
 
 export function createTask(params: {
+  uoid?: Uoid | undefined;
   workflow: Uoid;
   agent: Uoid;
   capability: Uoid;
@@ -59,7 +60,7 @@ export function createTask(params: {
   createdBy?: string | undefined;
   ownedBy?: string | undefined;
 }): Task {
-  const uoid = createUoid('tsk');
+  const uoid = params.uoid ?? createUoid('tsk');
   const spec: TaskSpec = {
     workflow: params.workflow,
     agent: params.agent,

@@ -1,0 +1,1 @@
+// Registry module stub - full impl: 2.4 (Capability Registry)

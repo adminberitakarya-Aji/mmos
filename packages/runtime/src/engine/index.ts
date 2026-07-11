@@ -1,0 +1,1 @@
+// Engine module stub - full impl: 2.3 (Built-in Engine Implementations)

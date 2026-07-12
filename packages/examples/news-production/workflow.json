@@ -1,0 +1,42 @@
+{
+  "$schema": "../../../specs/schemas/workflow.schema.json",
+  "uoid": {
+    "type": "wfl",
+    "identifier": "wf-news-production"
+  },
+  "name": "News Production Workflow",
+  "version": "1.0.0",
+  "spec": {
+    "composition": {
+      "type": "cmp",
+      "identifier": "news-prod-001"
+    },
+    "entryTask": {
+      "type": "tsk",
+      "identifier": "task-research"
+    },
+    "tasks": [
+      { "type": "tsk", "identifier": "task-research" },
+      { "type": "tsk", "identifier": "task-verification" },
+      { "type": "tsk", "identifier": "task-headline" },
+      { "type": "tsk", "identifier": "task-writing" },
+      { "type": "tsk", "identifier": "task-editorial-review" },
+      { "type": "tsk", "identifier": "task-seo" },
+      { "type": "tsk", "identifier": "task-thumbnail" },
+      { "type": "tsk", "identifier": "task-packaging" }
+    ],
+    "transitions": [
+      { "from": { "type": "tsk", "identifier": "task-research" }, "to": { "type": "tsk", "identifier": "task-verification" }, "condition": "on_success" },
+      { "from": { "type": "tsk", "identifier": "task-verification" }, "to": { "type": "tsk", "identifier": "task-headline" }, "condition": "on_success" },
+      { "from": { "type": "tsk", "identifier": "task-headline" }, "to": { "type": "tsk", "identifier": "task-writing" }, "condition": "on_success" },
+      { "from": { "type": "tsk", "identifier": "task-writing" }, "to": { "type": "tsk", "identifier": "task-editorial-review" }, "condition": "on_success" },
+      { "from": { "type": "tsk", "identifier": "task-editorial-review" }, "to": { "type": "tsk", "identifier": "task-seo" }, "condition": "on_success" },
+      { "from": { "type": "tsk", "identifier": "task-seo" }, "to": { "type": "tsk", "identifier": "task-thumbnail" }, "condition": "on_success" },
+      { "from": { "type": "tsk", "identifier": "task-thumbnail" }, "to": { "type": "tsk", "identifier": "task-packaging" }, "condition": "on_success" }
+    ]
+  },
+  "metadata": {
+    "createdAt": "2026-07-12T00:00:00.000Z",
+    "tags": ["news", "journalism"]
+  }
+}

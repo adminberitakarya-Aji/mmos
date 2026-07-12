@@ -1,0 +1,90 @@
+{
+  "$schema": "../../../specs/schemas/composition.schema.json",
+  "uoid": {
+    "type": "cmp",
+    "identifier": "news-prod-001"
+  },
+  "name": "News Production",
+  "version": "1.0.0",
+  "description": "End-to-end news article production with fact verification, headline generation, and SEO optimization",
+  "spec": {
+    "project": {
+      "type": "prj",
+      "identifier": "mmos-examples"
+    },
+    "workspace": {
+      "type": "wrk",
+      "identifier": "news-prod-workspace"
+    },
+    "entryWorkflow": {
+      "type": "wfl",
+      "identifier": "wf-news-production"
+    },
+    "workflows": [
+      {
+        "type": "wfl",
+        "identifier": "wf-news-production"
+      }
+    ],
+    "agents": [
+      {
+        "type": "agt",
+        "identifier": "researcher-agent"
+      },
+      {
+        "type": "agt",
+        "identifier": "verifier-agent"
+      },
+      {
+        "type": "agt",
+        "identifier": "writer-agent"
+      },
+      {
+        "type": "agt",
+        "identifier": "editor-agent"
+      },
+      {
+        "type": "agt",
+        "identifier": "publisher-agent"
+      }
+    ],
+    "capabilities": [
+      {
+        "type": "cap",
+        "identifier": "rss-fetch"
+      },
+      {
+        "type": "cap",
+        "identifier": "news-verify"
+      },
+      {
+        "type": "cap",
+        "identifier": "headline-generate"
+      },
+      {
+        "type": "cap",
+        "identifier": "text-generate"
+      },
+      {
+        "type": "cap",
+        "identifier": "text-review"
+      },
+      {
+        "type": "cap",
+        "identifier": "image-generate"
+      }
+    ],
+    "memory": [
+      {
+        "type": "mem",
+        "identifier": "editorial-context"
+      }
+    ]
+  },
+  "metadata": {
+    "createdAt": "2026-07-12T00:00:00.000Z",
+    "updatedAt": "2026-07-12T00:00:00.000Z",
+    "tags": ["news", "journalism", "content-production"],
+    "author": "MMOS Team"
+  }
+}

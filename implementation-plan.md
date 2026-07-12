@@ -373,25 +373,19 @@ packages/runtime/src/loops/
 - [x] Create README with usage instructions
 
 #### 3.2 Produksi Berita (`packages/examples/news-production/`)
-- [ ] Create directory structure: `packages/examples/news-production/`
-- [ ] Create composition file: `news-production.composition.json`
-- [ ] Define workflow: Ingest → Verify → Write → Translate → Distribute
-- [ ] Create agent definitions:
-    - Monitor agent with rss.fetch capability
-    - FactChecker agent with news.verify capability
-    - Journalist agent with text.generate capability
-    - Translator agent with text.translate capability
-    - Distributor agent with social.post capability
-- [ ] Implement capability implementations:
-    - rss.fetch: HTTP capability for RSS feed consumption
-    - news.verify: Function capability for fact-checking
-    - text.translate: Function capability for text translation
-    - social.post: HTTP capability for social media posting
-- [ ] Configure runtime: OpenAI + local memory + HTTP capability
-- [ ] Create example runner script: `run-news-example.ts`
-- [ ] Create environment template: `.env.example`
-- [ ] Create README with usage instructions
-- [ ] Test end-to-end: `npx mmos run news-production --topic "AI Developments"`
+- [x] Create directory structure: `packages/examples/news-production/`
+- [x] Create composition file: `news-production.composition.json`
+- [x] Define workflow: Research → Verify → Headline → Write → Review → SEO → Thumbnail → Package
+- [x] Implement capability implementations:
+    - rss-fetch: RSS feed capability (stub)
+    - news-verify: Fact-checking capability (stub)
+    - headline-generate: Headline generation capability (stub)
+    - text-generate: Article generation capability (stub)
+    - text-review: Editorial review capability (stub)
+- [x] Create news-generator orchestrator with 8-step pipeline
+- [x] Create example runner script: `src/run-news-example.ts`
+- [x] Create environment template: `.env.example`
+- [x] Create README with usage instructions
 
 #### 3.3 Media Sosial (`packages/examples/social-media/`)
 - [ ] Create directory structure: `packages/examples/social-media/`

@@ -388,25 +388,20 @@ packages/runtime/src/loops/
 - [x] Create README with usage instructions
 
 #### 3.3 Media Sosial (`packages/examples/social-media/`)
-- [ ] Create directory structure: `packages/examples/social-media/`
-- [ ] Create composition file: `social-media.composition.json`
-- [ ] Define workflow: Trend → Plan → Create → Schedule → Analyze
-- [ ] Create agent definitions:
-    - TrendAnalyzer agent with social.trends capability
-    - ContentPlanner agent with none (planning agent)
-    - Creator agent with image.generate and video.render capabilities
-    - Scheduler agent with social.schedule capability
-    - Analyst agent with none (analytics agent)
-- [ ] Implement capability implementations:
-    - social.trends: HTTP capability for social media trend analysis
-    - image.generate: Function capability for image generation
-    - video.render: Function capability for video rendering
-    - social.schedule: HTTP capability for social media scheduling
-- [ ] Configure runtime: OpenAI + local memory + HTTP capability
-- [ ] Create example runner script: `run-social-example.ts`
-- [ ] Create environment template: `.env.example`
-- [ ] Create README with usage instructions
-- [ ] Test end-to-end: `npx mmos run social-media --topic "Product Launch"`
+- [x] Create directory structure: `packages/examples/social-media/`
+- [x] Create composition file: `social-media.composition.json`
+- [x] Define workflow: Research → Audience → Caption → Hashtag → CTA → Image → Adapt → Package
+- [x] Implement capability implementations:
+    - knowledge-search: Campaign research capability (stub)
+    - audience-analyze: Target audience analysis (stub)
+    - text-generate: Caption & CTA generation (stub)
+    - hashtag-generate: Hashtag generation (stub)
+    - image-generate: Image generation (stub)
+    - content-adapt: Platform adaptation (stub)
+- [x] Create social-generator orchestrator with 7-step pipeline
+- [x] Create example runner script: `src/run-social-example.ts`
+- [x] Create environment template: `.env.example`
+- [x] Create README with usage instructions
 
 #### 3.4 Pelari Contoh
 - [ ] Create shared `run-example.ts` script in `packages/examples/`

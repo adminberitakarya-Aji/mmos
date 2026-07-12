@@ -1,0 +1,24 @@
+{
+  "name": "@mmos/social-media-example",
+  "version": "1.0.0",
+  "description": "MMOS Social Media Example - Multi-platform social content generation",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "run": "node dist/run-social-example.js",
+    "dev": "tsup --watch"
+  },
+  "dependencies": {
+    "@mmos/sdk": "workspace:*",
+    "@mmos/runtime": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

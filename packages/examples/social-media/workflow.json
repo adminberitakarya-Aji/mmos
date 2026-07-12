@@ -1,0 +1,42 @@
+{
+  "$schema": "../../../specs/schemas/workflow.schema.json",
+  "uoid": {
+    "type": "wfl",
+    "identifier": "wf-social-media"
+  },
+  "name": "Social Media Workflow",
+  "version": "1.0.0",
+  "spec": {
+    "composition": {
+      "type": "cmp",
+      "identifier": "social-campaign-001"
+    },
+    "entryTask": {
+      "type": "tsk",
+      "identifier": "task-research"
+    },
+    "tasks": [
+      { "type": "tsk", "identifier": "task-research" },
+      { "type": "tsk", "identifier": "task-audience" },
+      { "type": "tsk", "identifier": "task-caption" },
+      { "type": "tsk", "identifier": "task-hashtag" },
+      { "type": "tsk", "identifier": "task-cta" },
+      { "type": "tsk", "identifier": "task-image" },
+      { "type": "tsk", "identifier": "task-adaptation" },
+      { "type": "tsk", "identifier": "task-packaging" }
+    ],
+    "transitions": [
+      { "from": { "type": "tsk", "identifier": "task-research" }, "to": { "type": "tsk", "identifier": "task-audience" }, "condition": "on_success" },
+      { "from": { "type": "tsk", "identifier": "task-audience" }, "to": { "type": "tsk", "identifier": "task-caption" }, "condition": "on_success" },
+      { "from": { "type": "tsk", "identifier": "task-caption" }, "to": { "type": "tsk", "identifier": "task-hashtag" }, "condition": "on_success" },
+      { "from": { "type": "tsk", "identifier": "task-hashtag" }, "to": { "type": "tsk", "identifier": "task-cta" }, "condition": "on_success" },
+      { "from": { "type": "tsk", "identifier": "task-cta" }, "to": { "type": "tsk", "identifier": "task-image" }, "condition": "on_success" },
+      { "from": { "type": "tsk", "identifier": "task-image" }, "to": { "type": "tsk", "identifier": "task-adaptation" }, "condition": "on_success" },
+      { "from": { "type": "tsk", "identifier": "task-adaptation" }, "to": { "type": "tsk", "identifier": "task-packaging" }, "condition": "on_success" }
+    ]
+  },
+  "metadata": {
+    "createdAt": "2026-07-12T00:00:00.000Z",
+    "tags": ["social-media", "marketing"]
+  }
+}

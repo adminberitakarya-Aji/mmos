@@ -1,0 +1,56 @@
+{
+  "$schema": "../../../specs/schemas/composition.schema.json",
+  "uoid": {
+    "type": "cmp",
+    "identifier": "social-campaign-001"
+  },
+  "name": "Social Media Campaign",
+  "version": "1.0.0",
+  "description": "Multi-platform social media content generation with audience analysis and platform adaptation",
+  "spec": {
+    "project": {
+      "type": "prj",
+      "identifier": "mmos-examples"
+    },
+    "workspace": {
+      "type": "wrk",
+      "identifier": "social-media-workspace"
+    },
+    "entryWorkflow": {
+      "type": "wfl",
+      "identifier": "wf-social-media"
+    },
+    "workflows": [
+      {
+        "type": "wfl",
+        "identifier": "wf-social-media"
+      }
+    ],
+    "agents": [
+      { "type": "agt", "identifier": "researcher-agent" },
+      { "type": "agt", "identifier": "audience-agent" },
+      { "type": "agt", "identifier": "copywriter-agent" },
+      { "type": "agt", "identifier": "marketing-agent" },
+      { "type": "agt", "identifier": "image-agent" },
+      { "type": "agt", "identifier": "packaging-agent" }
+    ],
+    "capabilities": [
+      { "type": "cap", "identifier": "knowledge-search" },
+      { "type": "cap", "identifier": "audience-analyze" },
+      { "type": "cap", "identifier": "text-generate" },
+      { "type": "cap", "identifier": "hashtag-generate" },
+      { "type": "cap", "identifier": "cta-generate" },
+      { "type": "cap", "identifier": "image-generate" },
+      { "type": "cap", "identifier": "content-adapt" }
+    ],
+    "memory": [
+      { "type": "mem", "identifier": "brand-context" }
+    ]
+  },
+  "metadata": {
+    "createdAt": "2026-07-12T00:00:00.000Z",
+    "updatedAt": "2026-07-12T00:00:00.000Z",
+    "tags": ["social-media", "marketing", "content-creation"],
+    "author": "MMOS Team"
+  }
+}

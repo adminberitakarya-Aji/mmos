@@ -15,7 +15,7 @@ import type {
   ResearchResult,
   OutlineResult, 
   DraftResult,
-  ReviewResult 
+  ReviewResult
 } from './types.js';
 
 /**
@@ -79,6 +79,7 @@ export class BlogGenerator {
     console.log('[Step 6/6] Packaging final result...');
     const finalContent = review.approved ? draft.content : this.applyReviewSuggestions(draft, review);
     const metadata = this.generateMetadata(topic, draft, seoReport);
+    const imageUrl = includeImage ? 'https://example.com/generated-featured-image.png' : 'https://example.com/default-image.png';
     console.log(`  ✓ Generated metadata`);
     console.log(`  ✓ Article ready for publishing\n`);
 
@@ -89,8 +90,15 @@ export class BlogGenerator {
     return {
       article: finalContent,
       metadata,
-      imageUrl: includeImage ? 'https://example.com/generated-featured-image.png' : undefined,
+      imageUrl,
       seoReport,
+      packageBundle: {
+        files: [
+          { name: 'article.md', path: './article.md', content: finalContent, type: 'markdown' },
+          { name: 'metadata.json', path: './metadata.json', content: JSON.stringify(metadata), type: 'json' },
+        ],
+        bundle: `Blog post: ${metadata.title}`,
+      },
     };
   }
 

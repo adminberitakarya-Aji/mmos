@@ -13,8 +13,9 @@ export interface BlogInput {
 export interface BlogOutput {
   readonly article: string;
   readonly metadata: BlogMetadata;
-  readonly imageUrl: string | undefined;
-  readonly seoReport: SeoReport | undefined;
+  readonly imageUrl: string;
+  readonly seoReport: SeoReport;
+  readonly packageBundle: PackageResult;
 }
 
 export interface BlogMetadata {

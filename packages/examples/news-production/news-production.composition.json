@@ -1,90 +1,122 @@
 {
   "$schema": "../../../specs/schemas/composition.schema.json",
-  "uoid": {
-    "type": "cmp",
-    "identifier": "news-prod-001"
-  },
+  "compositionId": "cmp_news_prod_001",
+  "projectId": "prj_mmos_examples",
   "name": "News Production",
+  "displayName": "AI-Powered News Production",
+  "description": "Multi-step news article production workflow with fact verification, editorial review, and SEO optimization",
   "version": "1.0.0",
-  "description": "End-to-end news article production with fact verification, headline generation, and SEO optimization",
-  "spec": {
-    "project": {
-      "type": "prj",
-      "identifier": "mmos-examples"
+  "status": "active",
+  "owner": {
+    "projectId": "prj_mmos_examples",
+    "organizationId": null,
+    "workspaceId": "ws_news_examples"
+  },
+  "workflows": [
+    {
+      "workflowId": "wf_news_production",
+      "name": "News Production Workflow",
+      "displayName": "News Production",
+      "version": "1.0.0",
+      "role": "primary",
+      "enabled": true
+    }
+  ],
+  "defaultWorkflowId": "wf_news_production",
+  "agents": [
+    {
+      "agentId": "agt_researcher",
+      "role": "researcher",
+      "optional": false
     },
-    "workspace": {
-      "type": "wrk",
-      "identifier": "news-prod-workspace"
+    {
+      "agentId": "agt_fact_checker",
+      "role": "fact-checker",
+      "optional": false
     },
-    "entryWorkflow": {
-      "type": "wfl",
-      "identifier": "wf-news-production"
+    {
+      "agentId": "agt_journalist",
+      "role": "journalist",
+      "optional": false
     },
-    "workflows": [
-      {
-        "type": "wfl",
-        "identifier": "wf-news-production"
+    {
+      "agentId": "agt_editor",
+      "role": "editor",
+      "optional": false
+    },
+    {
+      "agentId": "agt_publisher",
+      "role": "publisher",
+      "optional": true
+    }
+  ],
+  "capabilities": [
+    {
+      "capabilityId": "cap_rss_fetch",
+      "required": true
+    },
+    {
+      "capabilityId": "cap_news_verify",
+      "required": true
+    },
+    {
+      "capabilityId": "cap_headline_generate",
+      "required": true
+    },
+    {
+      "capabilityId": "cap_text_generate",
+      "required": true
+    },
+    {
+      "capabilityId": "cap_text_review",
+      "required": true
+    }
+  ],
+  "memory": [
+    {
+      "memoryId": "mem_news_context",
+      "type": "knowledge",
+      "readOnly": false
+    }
+  ],
+  "configuration": {
+    "executionPolicy": {
+      "mode": "sequential",
+      "timeoutSeconds": 7200,
+      "allowHumanIntervention": true,
+      "retryPolicy": {
+        "enabled": true,
+        "maxAttempts": 3,
+        "backoffStrategy": "exponential",
+        "delaySeconds": 5
       }
-    ],
-    "agents": [
-      {
-        "type": "agt",
-        "identifier": "researcher-agent"
-      },
-      {
-        "type": "agt",
-        "identifier": "verifier-agent"
-      },
-      {
-        "type": "agt",
-        "identifier": "writer-agent"
-      },
-      {
-        "type": "agt",
-        "identifier": "editor-agent"
-      },
-      {
-        "type": "agt",
-        "identifier": "publisher-agent"
-      }
-    ],
-    "capabilities": [
-      {
-        "type": "cap",
-        "identifier": "rss-fetch"
-      },
-      {
-        "type": "cap",
-        "identifier": "news-verify"
-      },
-      {
-        "type": "cap",
-        "identifier": "headline-generate"
-      },
-      {
-        "type": "cap",
-        "identifier": "text-generate"
-      },
-      {
-        "type": "cap",
-        "identifier": "text-review"
-      },
-      {
-        "type": "cap",
-        "identifier": "image-generate"
-      }
-    ],
-    "memory": [
-      {
-        "type": "mem",
-        "identifier": "editorial-context"
-      }
-    ]
+    },
+    "defaultRuntime": {
+      "runtimeId": "run_openai",
+      "provider": "OpenAI",
+      "version": "1.0.0"
+    },
+    "environment": "development"
   },
   "metadata": {
+    "author": "MMOS Team",
+    "category": "news-automation",
+    "useCase": "news-production"
+  },
+  "labels": {
+    "type": "news",
+    "ai-powered": "true"
+  },
+  "timestamps": {
     "createdAt": "2026-07-12T00:00:00.000Z",
     "updatedAt": "2026-07-12T00:00:00.000Z",
-    "tags": ["news", "journalism", "content-production"],
-    "author": "MMOS Team"
+    "archivedAt": null,
+    "deletedAt": null
+  },
+  "audit": {
+    "createdBy": "mmos-system",
+    "updatedBy": null,
+    "archivedBy": null,
+    "deletedBy": null
   }
 }

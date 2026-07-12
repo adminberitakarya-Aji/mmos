@@ -404,11 +404,13 @@ packages/runtime/src/loops/
 - [x] Create README with usage instructions
 
 #### 3.4 Pelari Contoh
-- [ ] Create shared `run-example.ts` script in `packages/examples/`
-- [ ] Create environment template: `.env.example` in `packages/examples/`
-- [ ] Create README with usage instructions for each example
-- [ ] Implement common utility functions for examples
-- [ ] Create shared configuration for examples
+- [x] Create shared `src/` directory with common utilities
+- [x] Create shared types: `src/types.ts` (logger, config, parsing)
+- [x] Create shared runner: `src/run-example.ts` (CLI, output management)
+- [x] Create `src/index.ts` barrel export
+- [x] Create environment template: `.env.example`
+- [x] Create README with usage instructions
+- [x] Create package configuration: `package.json`, `tsconfig.json`
 
 ---
 

@@ -1,56 +1,131 @@
 {
   "$schema": "../../../specs/schemas/composition.schema.json",
-  "uoid": {
-    "type": "cmp",
-    "identifier": "social-campaign-001"
-  },
+  "compositionId": "cmp_social_med_001",
+  "projectId": "prj_mmos_examples",
   "name": "Social Media Campaign",
+  "displayName": "Multi-Platform Social Media Content Generation",
+  "description": "Generate and adapt social media content for Instagram, Facebook, X, and LinkedIn with audience analysis",
   "version": "1.0.0",
-  "description": "Multi-platform social media content generation with audience analysis and platform adaptation",
-  "spec": {
-    "project": {
-      "type": "prj",
-      "identifier": "mmos-examples"
+  "status": "active",
+  "owner": {
+    "projectId": "prj_mmos_examples",
+    "organizationId": null,
+    "workspaceId": "ws_social_examples"
+  },
+  "workflows": [
+    {
+      "workflowId": "wf_social_media",
+      "name": "Social Media Workflow",
+      "displayName": "Social Media Campaign",
+      "version": "1.0.0",
+      "role": "primary",
+      "enabled": true
+    }
+  ],
+  "defaultWorkflowId": "wf_social_media",
+  "agents": [
+    {
+      "agentId": "agt_researcher",
+      "role": "researcher",
+      "optional": false
     },
-    "workspace": {
-      "type": "wrk",
-      "identifier": "social-media-workspace"
+    {
+      "agentId": "agt_audience_analyst",
+      "role": "audience-analyst",
+      "optional": false
     },
-    "entryWorkflow": {
-      "type": "wfl",
-      "identifier": "wf-social-media"
+    {
+      "agentId": "agt_copywriter",
+      "role": "copywriter",
+      "optional": false
     },
-    "workflows": [
-      {
-        "type": "wfl",
-        "identifier": "wf-social-media"
+    {
+      "agentId": "agt_marketing",
+      "role": "marketing",
+      "optional": false
+    },
+    {
+      "agentId": "agt_image_agent",
+      "role": "image-agent",
+      "optional": true
+    },
+    {
+      "agentId": "agt_packaging",
+      "role": "packaging",
+      "optional": true
+    }
+  ],
+  "capabilities": [
+    {
+      "capabilityId": "cap_knowledge_search",
+      "required": true
+    },
+    {
+      "capabilityId": "cap_audience_analyze",
+      "required": true
+    },
+    {
+      "capabilityId": "cap_text_generate",
+      "required": true
+    },
+    {
+      "capabilityId": "cap_hashtag_generate",
+      "required": true
+    },
+    {
+      "capabilityId": "cap_image_generate",
+      "required": false
+    },
+    {
+      "capabilityId": "cap_content_adapt",
+      "required": true
+    }
+  ],
+  "memory": [
+    {
+      "memoryId": "mem_brand_context",
+      "type": "knowledge",
+      "readOnly": true
+    }
+  ],
+  "configuration": {
+    "executionPolicy": {
+      "mode": "sequential",
+      "timeoutSeconds": 3600,
+      "allowHumanIntervention": true,
+      "retryPolicy": {
+        "enabled": true,
+        "maxAttempts": 3,
+        "backoffStrategy": "exponential",
+        "delaySeconds": 5
       }
-    ],
-    "agents": [
-      { "type": "agt", "identifier": "researcher-agent" },
-      { "type": "agt", "identifier": "audience-agent" },
-      { "type": "agt", "identifier": "copywriter-agent" },
-      { "type": "agt", "identifier": "marketing-agent" },
-      { "type": "agt", "identifier": "image-agent" },
-      { "type": "agt", "identifier": "packaging-agent" }
-    ],
-    "capabilities": [
-      { "type": "cap", "identifier": "knowledge-search" },
-      { "type": "cap", "identifier": "audience-analyze" },
-      { "type": "cap", "identifier": "text-generate" },
-      { "type": "cap", "identifier": "hashtag-generate" },
-      { "type": "cap", "identifier": "cta-generate" },
-      { "type": "cap", "identifier": "image-generate" },
-      { "type": "cap", "identifier": "content-adapt" }
-    ],
-    "memory": [
-      { "type": "mem", "identifier": "brand-context" }
-    ]
+    },
+    "defaultRuntime": {
+      "runtimeId": "run_openai",
+      "provider": "OpenAI",
+      "version": "1.0.0"
+    },
+    "environment": "development"
   },
   "metadata": {
+    "author": "MMOS Team",
+    "category": "social-media-automation",
+    "useCase": "campaign-generation"
+  },
+  "labels": {
+    "type": "social-media",
+    "ai-powered": "true"
+  },
+  "timestamps": {
     "createdAt": "2026-07-12T00:00:00.000Z",
     "updatedAt": "2026-07-12T00:00:00.000Z",
-    "tags": ["social-media", "marketing", "content-creation"],
-    "author": "MMOS Team"
+    "archivedAt": null,
+    "deletedAt": null
+  },
+  "audit": {
+    "createdBy": "mmos-system",
+    "updatedBy": null,
+    "archivedBy": null,
+    "deletedBy": null
   }
 }

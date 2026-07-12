@@ -1,78 +1,113 @@
 {
   "$schema": "../../../specs/schemas/composition.schema.json",
-  "uoid": {
-    "type": "cmp",
-    "identifier": "blog-gen-001"
-  },
+  "compositionId": "cmp_blog_gen_001",
+  "projectId": "prj_mmos_examples",
   "name": "Blog Generation",
+  "displayName": "End-to-end Blog Content Generation",
+  "description": "AI-powered blog article generation with research, writing, review, and SEO optimization pipeline",
   "version": "1.0.0",
-  "description": "End-to-end blog article generation with research, writing, review, and SEO optimization",
-  "spec": {
-    "project": {
-      "type": "prj",
-      "identifier": "mmos-examples"
+  "status": "active",
+  "owner": {
+    "projectId": "prj_mmos_examples",
+    "organizationId": null,
+    "workspaceId": "ws_blog_examples"
+  },
+  "workflows": [
+    {
+      "workflowId": "wf_blog_generation",
+      "name": "Blog Generation Workflow",
+      "displayName": "Blog Generation",
+      "version": "1.0.0",
+      "role": "primary",
+      "enabled": true
+    }
+  ],
+  "defaultWorkflowId": "wf_blog_generation",
+  "agents": [
+    {
+      "agentId": "agt_researcher",
+      "role": "researcher",
+      "optional": false
     },
-    "workspace": {
-      "type": "wrk",
-      "identifier": "blog-gen-workspace"
+    {
+      "agentId": "agt_writer",
+      "role": "writer",
+      "optional": false
     },
-    "entryWorkflow": {
-      "type": "wfl",
-      "identifier": "wf-blog-generation"
+    {
+      "agentId": "agt_editor",
+      "role": "editor",
+      "optional": false
     },
-    "workflows": [
-      {
-        "type": "wfl",
-        "identifier": "wf-blog-generation"
+    {
+      "agentId": "agt_publisher",
+      "role": "publisher",
+      "optional": true
+    }
+  ],
+  "capabilities": [
+    {
+      "capabilityId": "cap_web_search",
+      "required": true
+    },
+    {
+      "capabilityId": "cap_text_generate",
+      "required": true
+    },
+    {
+      "capabilityId": "cap_text_summarize",
+      "required": true
+    },
+    {
+      "capabilityId": "cap_cms_publish",
+      "required": false
+    }
+  ],
+  "memory": [
+    {
+      "memoryId": "mem_blog_context",
+      "type": "knowledge",
+      "readOnly": false
+    }
+  ],
+  "configuration": {
+    "executionPolicy": {
+      "mode": "sequential",
+      "timeoutSeconds": 3600,
+      "allowHumanIntervention": true,
+      "retryPolicy": {
+        "enabled": true,
+        "maxAttempts": 3,
+        "backoffStrategy": "exponential",
+        "delaySeconds": 5
       }
-    ],
-    "agents": [
-      {
-        "type": "agt",
-        "identifier": "researcher-agent"
-      },
-      {
-        "type": "agt",
-        "identifier": "writer-agent"
-      },
-      {
-        "type": "agt",
-        "identifier": "editor-agent"
-      },
-      {
-        "type": "agt",
-        "identifier": "publisher-agent"
-      }
-    ],
-    "capabilities": [
-      {
-        "type": "cap",
-        "identifier": "web-search"
-      },
-      {
-        "type": "cap",
-        "identifier": "text-generate"
-      },
-      {
-        "type": "cap",
-        "identifier": "text-summarize"
-      },
-      {
-        "type": "cap",
-        "identifier": "cms-publish"
-      }
-    ],
-    "memory": [
-      {
-        "type": "mem",
-        "identifier": "blog-context"
-      }
-    ]
+    },
+    "defaultRuntime": {
+      "runtimeId": "run_openai",
+      "provider": "OpenAI",
+      "version": "1.0.0"
+    },
+    "environment": "development"
   },
   "metadata": {
+    "author": "MMOS Team",
+    "category": "content-generation",
+    "useCase": "blog-automation"
+  },
+  "labels": {
+    "type": "blog",
+    "ai-powered": "true"
+  },
+  "timestamps": {
     "createdAt": "2026-07-12T00:00:00.000Z",
     "updatedAt": "2026-07-12T00:00:00.000Z",
-    "tags": ["blog", "content-generation", "seo"],
-    "author": "MMOS Team"
+    "archivedAt": null,
+    "deletedAt": null
+  },
+  "audit": {
+    "createdBy": "mmos-system",
+    "updatedBy": null,
+    "archivedBy": null,
+    "deletedBy": null
   }
 }

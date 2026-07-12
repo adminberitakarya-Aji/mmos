@@ -262,7 +262,7 @@ describe('ResourceEvaluator', () => {
 describe('ReadyQueue', () => {
   it('orders by priority then seq', () => {
     const q = createReadyQueue();
-    const e = {} as Execution;
+    const e = makeExecution('e1');
     const t1 = makeTask('t1');
     const t2 = makeTask('t2');
     q.enqueue(t1, e, 'low');

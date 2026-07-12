@@ -53,7 +53,7 @@ Klik link di bio 🚀`,
 
         `🚀 Transformasi bisnis tidak harus mahal & rumit!
 
-AI Studio hadir untuk ${campaign.audience || 'UMKM Indonesia'} dengan solusi AI yang:
+AI Studio hadir untuk ${audience.demographics.location || 'UMKM Indonesia'} dengan solusi AI yang:
 
 ✅ Mudah digunakan
 ✅ Terjangkau

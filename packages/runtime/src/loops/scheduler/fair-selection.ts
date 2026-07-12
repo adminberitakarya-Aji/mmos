@@ -25,6 +25,7 @@ interface FairEntry {
   readonly executionUoid: Uoid;
   lastServedAt: Date;
   firstSeenAt: Date;
+  seq: number;
 }
 
 export interface FairSnapshot {
@@ -52,12 +53,13 @@ export function createFairSelector(options: FairSelectorOptions = {}): FairSelec
   const maxWaitMs = options.maxWaitMs ?? 30_000;
   const now = options.now ?? (() => new Date());
   const entries = new Map<string, FairEntry>();
+  let globalSeq = 0;
 
   function getOrCreate(uoid: Uoid): FairEntry {
     const key = uoid.toString();
     let e = entries.get(key);
     if (!e) {
-      e = { executionUoid: uoid, lastServedAt: now(), firstSeenAt: now() };
+      e = { executionUoid: uoid, lastServedAt: now(), firstSeenAt: now(), seq: globalSeq++ };
       entries.set(key, e);
     }
     return e;
@@ -86,12 +88,15 @@ export function createFairSelector(options: FairSelectorOptions = {}): FairSelec
       // 2. Touch unknown candidates so they have a fair chance
       for (const c of candidates) getOrCreate(c);
       // 3. Round-robin: pick the one served least recently
+      // Use seq as tie-breaker when timestamps are equal
       const sorted = [...candidates].sort((a, b) => {
         const ea = entries.get(a.toString());
         const eb = entries.get(b.toString());
         const ta = ea ? ea.lastServedAt.getTime() : 0;
         const tb = eb ? eb.lastServedAt.getTime() : 0;
-        return ta - tb;
+        if (ta !== tb) return ta - tb;
+        // Tie-breaker: lower seq (created first) wins
+        return (ea?.seq ?? 0) - (eb?.seq ?? 0);
       });
       const winner = sorted[0]!;
       const e = entries.get(winner.toString());
@@ -100,6 +105,7 @@ export function createFairSelector(options: FairSelectorOptions = {}): FairSelec
     },
     reset() {
       entries.clear();
+      globalSeq = 0;
     },
     snapshot() {
       const t = now().getTime();

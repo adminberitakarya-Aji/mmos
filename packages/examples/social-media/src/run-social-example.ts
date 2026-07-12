@@ -11,6 +11,15 @@ import type { SocialInput, SocialOutput, Platform } from './types.js';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
+// Helper to safely get next argument with error message
+function getNextArg(args: string[], i: number, optionName: string): string {
+  if (i + 1 >= args.length) {
+    console.error(`Error: --${optionName} requires a value`);
+    process.exit(1);
+  }
+  return args[i + 1]!;
+}
+
 // Parse command line arguments
 function parseArgs(): SocialInput {
   const args = process.argv.slice(2);
@@ -23,12 +32,15 @@ function parseArgs(): SocialInput {
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    if (arg === '--topic' && i + 1 < args.length) {
-      input.topic = args[++i];
-    } else if (arg === '--audience' && i + 1 < args.length) {
-      input.audience = args[++i];
-    } else if (arg === '--platforms' && i + 1 < args.length) {
-      input.platforms = args[++i].split(',') as Platform[];
+    if (arg === '--topic') {
+      input.topic = getNextArg(args, i, 'topic');
+      i++; // skip next arg as it's the value
+    } else if (arg === '--audience') {
+      input.audience = getNextArg(args, i, 'audience');
+      i++;
+    } else if (arg === '--platforms') {
+      input.platforms = getNextArg(args, i, 'platforms').split(',') as Platform[];
+      i++;
     } else if (arg === '--no-image') {
       input.includeImage = false;
     } else if (arg === '--help') {
@@ -108,7 +120,7 @@ async function main(): Promise<void> {
   
   console.log(`📱 Campaign: ${input.topic}`);
   console.log(`👥 Audience: ${input.audience}`);
-  console.log(`📢 Platforms: ${input.platforms?.join(', ')}`);
+  console.log(`📢 Platforms: ${input.platforms?.join(', ') ?? 'all'}`);
   console.log('');
 
   try {

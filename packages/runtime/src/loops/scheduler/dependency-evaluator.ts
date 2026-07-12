@@ -135,6 +135,8 @@ export function findReadyTasks(
   const resolver = createDependencyResolver(workflow);
   const ready: Uoid[] = [];
   for (const task of tasks) {
+    // Skip tasks that are already completed
+    if (completed.has(task.uoid)) continue;
     const deps = resolver(task.uoid);
     const result = evaluateDependencies(task, deps, { completed });
     if (result.satisfied) ready.push(task.uoid);

@@ -11,6 +11,15 @@ import type { NewsInput, NewsOutput } from './types.js';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
+// Helper to safely get next argument with error message
+function getNextArg(args: string[], i: number, optionName: string): string {
+  if (i + 1 >= args.length) {
+    console.error(`Error: --${optionName} requires a value`);
+    process.exit(1);
+  }
+  return args[i + 1]!;
+}
+
 // Parse command line arguments
 function parseArgs(): NewsInput {
   const args = process.argv.slice(2);
@@ -23,12 +32,15 @@ function parseArgs(): NewsInput {
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    if (arg === '--topic' && i + 1 < args.length) {
-      input.topic = args[++i];
-    } else if (arg === '--language' && i + 1 < args.length) {
-      input.language = args[++i];
-    } else if (arg === '--category' && i + 1 < args.length) {
-      input.category = args[++i];
+    if (arg === '--topic') {
+      input.topic = getNextArg(args, i, 'topic');
+      i++; // skip next arg as it's the value
+    } else if (arg === '--language') {
+      input.language = getNextArg(args, i, 'language') as 'id' | 'en';
+      i++;
+    } else if (arg === '--category') {
+      input.category = getNextArg(args, i, 'category');
+      i++;
     } else if (arg === '--no-publish') {
       input.publish = false;
     } else if (arg === '--help') {

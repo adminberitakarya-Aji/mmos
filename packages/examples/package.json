@@ -12,6 +12,9 @@
     "./types": "./src/types.ts",
     "./runner": "./src/run-example.ts"
   },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
   "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.10.0",

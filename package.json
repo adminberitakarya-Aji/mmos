@@ -7,8 +7,9 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces",
+    "build": "npm run build --workspace=@mmos/sdk && npm run build --workspace=@mmos/runtime",
     "build:sdk": "npm run build --workspace=@mmos/sdk",
+    "build:runtime": "npm run build --workspace=@mmos/runtime",
     "test": "npm run test --workspaces",
     "test:sdk": "npm run test --workspace=@mmos/sdk",
     "lint": "npm run lint --workspaces",

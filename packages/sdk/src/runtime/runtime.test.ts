@@ -9,7 +9,7 @@ import { createUoid } from '../domain/identity.js';
 import { createWorkflow, addTask, addTransition } from '../domain/workflow.js';
 import { createTask } from '../domain/task.js';
 import { createExecution } from '../domain/execution.js';
-import { Event } from '../domain/event.js';
+import { createEvent } from '../domain/event.js';
 import { InMemoryEventBus } from './event-bus.js';
 import { createRuntimeContext } from './execution-context.js';
 import { createExecutionResult, isSuccessfulResult } from './execution-result.js';
@@ -42,11 +42,11 @@ describe('InMemoryEventBus', () => {
       received.push(ev.spec.type);
     });
 
-    const ev: Event = {
-      uoid: createUoid('evt'),
-      spec: { type: 'task.completed', source: createUoid('agt'), payload: {}, createdAt: new Date() },
-      createdAt: new Date(),
-    } as Event;
+    const ev = createEvent({
+      source: createUoid('agt'),
+      type: 'task.completed',
+      payload: {},
+    });
 
     await bus.publish(ev);
     expect(received).toEqual(['task.completed']);
@@ -55,18 +55,18 @@ describe('InMemoryEventBus', () => {
   it('supports RegExp patterns', async () => {
     const bus = new InMemoryEventBus();
     const received: string[] = [];
-    bus.subscribe(/^task\./, ev => received.push(ev.spec.type));
+    bus.subscribe(/^task\./, ev => { received.push(ev.spec.type); });
 
-    const ev1: Event = {
-      uoid: createUoid('evt'),
-      spec: { type: 'task.started', source: createUoid('agt'), payload: {}, createdAt: new Date() },
-      createdAt: new Date(),
-    } as Event;
-    const ev2: Event = {
-      uoid: createUoid('evt'),
-      spec: { type: 'execution.completed', source: createUoid('agt'), payload: {}, createdAt: new Date() },
-      createdAt: new Date(),
-    } as Event;
+    const ev1 = createEvent({
+      source: createUoid('agt'),
+      type: 'task.started',
+      payload: {},
+    });
+    const ev2 = createEvent({
+      source: createUoid('agt'),
+      type: 'execution.completed',
+      payload: {},
+    });
 
     await bus.publishMany([ev1, ev2]);
     expect(received).toEqual(['task.started']);
@@ -75,13 +75,13 @@ describe('InMemoryEventBus', () => {
   it('unsubscribe stops delivery', () => {
     const bus = new InMemoryEventBus();
     const received: string[] = [];
-    const unsub = bus.subscribe('x', () => received.push('x'));
+    const unsub = bus.subscribe('x', () => { received.push('x'); });
     unsub();
-    void bus.publish({
-      uoid: createUoid('evt'),
-      spec: { type: 'x', source: createUoid('agt'), payload: {}, createdAt: new Date() },
-      createdAt: new Date(),
-    } as Event);
+    void bus.publish(createEvent({
+      source: createUoid('agt'),
+      type: 'x',
+      payload: {},
+    }));
     expect(received).toEqual([]);
   });
 });
@@ -120,8 +120,8 @@ describe('BaseOrchestrator (linear workflow)', () => {
   it('runs tasks in order and emits events', async () => {
     const bus = new InMemoryEventBus();
     const seen: string[] = [];
-    bus.subscribe(/^task\./, ev => seen.push(ev.spec.type));
-    bus.subscribe(/^execution\./, ev => seen.push(ev.spec.type));
+    bus.subscribe(/^task\./, ev => { seen.push(ev.spec.type); });
+    bus.subscribe(/^execution\./, ev => { seen.push(ev.spec.type); });
 
     const comp = createUoid('cmp');
     const wfUoid = createUoid('wfl');
@@ -162,8 +162,8 @@ describe('BaseOrchestrator (linear workflow)', () => {
   it('marks execution failed and emits failure event on task error', async () => {
     const bus = new InMemoryEventBus();
     const seen: string[] = [];
-    bus.subscribe(/^execution\./, ev => seen.push(ev.spec.type));
-    bus.subscribe('task.failed', ev => seen.push(ev.spec.type));
+    bus.subscribe(/^execution\./, ev => { seen.push(ev.spec.type); });
+    bus.subscribe('task.failed', ev => { seen.push(ev.spec.type); });
 
     const comp = createUoid('cmp');
     const tA = createUoid('tsk');

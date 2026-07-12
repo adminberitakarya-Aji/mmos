@@ -22,6 +22,30 @@
     "./registry": {
       "import": "./dist/registry/index.js",
       "types": "./dist/registry/index.d.ts"
+    },
+    "./loops": {
+      "import": "./dist/loops/index.js",
+      "types": "./dist/loops/index.d.ts"
+    },
+    "./loops/system": {
+      "import": "./dist/loops/system/index.js",
+      "types": "./dist/loops/system/index.d.ts"
+    },
+    "./loops/scheduler": {
+      "import": "./dist/loops/scheduler/index.js",
+      "types": "./dist/loops/scheduler/index.d.ts"
+    },
+    "./loops/execution": {
+      "import": "./dist/loops/execution/index.js",
+      "types": "./dist/loops/execution/index.d.ts"
+    },
+    "./loops/agent": {
+      "import": "./dist/loops/agent/index.js",
+      "types": "./dist/loops/agent/index.d.ts"
+    },
+    "./loops/event": {
+      "import": "./dist/loops/event/index.js",
+      "types": "./dist/loops/event/index.d.ts"
     }
   },
   "scripts": {

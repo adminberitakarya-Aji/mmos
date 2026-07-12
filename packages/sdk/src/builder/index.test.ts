@@ -19,7 +19,7 @@ import {
 
 describe('CompositionBuilder', () => {
   const project = createUoid('prj');
-  const workspace = createUoid('wsp');
+  const workspace = createUoid('wrk');
 
   it('builds a composition with sensible defaults', () => {
     const composition = new CompositionBuilder()

@@ -117,6 +117,7 @@ describe('createRuntime / createCapability / createMemory', () => {
     const m = createMemory({
       composition: createUoid('cmp'),
       name: 'short-term',
+      type: 'ephemeral',
       backend: 'in-memory',
     });
     expect(m.uoid.type).toBe('mem');

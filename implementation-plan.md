@@ -12,26 +12,33 @@
 
 **Phase 3 (Executable Specification) — Design Complete:**
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| 20 Architecture Decision Records (ADR-001 to ADR-020) | ✅ Complete | Frozen architectural contracts |
-| 10 Rich Domain JSON Schemas (specs/schemas/) | ✅ Complete | Source of truth for validation |
-| Validator Specification (tools/validator/) | ✅ Spec Complete | Design docs only; implementation deferred |
-| Generator Specification (tools/generators/) | ✅ Spec Complete | Design docs only; implementation deferred |
-| CLI Specification (tools/cli/) | ✅ Spec Complete | Design docs only; implementation deferred |
+| Komponen | Status | Catatan |
+|----------|--------|---------|
+| 20 Architecture Decision Records (ADR-001 to ADR-020) | ✅ Complete | Kontrak arsitektur beku |
+| 10 Rich Domain JSON Schemas (specs/schemas/) | ✅ Complete | Sumber kebenaran untuk validasi |
+| 9 Implementation Specifications (specs/ims/, IMS-100 to IMS-900) | ✅ Complete | Spesifikasi perilaku |
+| 5 Runtime Reference Documents (docs/reference/runtime/) | ✅ Complete | **Belum diimplementasikan** — menjadi bagian dari Milestone 2.6 |
+| &nbsp;&nbsp;&nbsp;├─ system-loop.md | ✅ Complete | Detak jantung Runtime |
+| &nbsp;&nbsp;&nbsp;├─ scheduler-loop.md | ✅ Complete | Pemilihan Task berikutnya |
+| &nbsp;&nbsp;&nbsp;├─ execution-loop.md | ✅ Complete | Siklus hidup Execution |
+| &nbsp;&nbsp;&nbsp;├─ agent-loop.md | ✅ Complete | Siklus penalaran Agent |
+| &nbsp;&nbsp;&nbsp;└─ event-loop.md | ✅ Complete | Pemrosesan & dispatch Event |
+| Validator Specification (tools/validator/) | ✅ Spec Complete | Desain saja; implementasi ditunda ke Phase 4 |
+| Generator Specification (tools/generators/) | ✅ Spec Complete | Desain saja; implementasi ditunda ke Phase 4 |
+| CLI Specification (tools/cli/) | ✅ Spec Complete | Desain saja; implementasi ditunda ke Phase 4 |
 
 > **Per AUDIT_REPORT.md**: "Tidak ada kode implementasi... tools/ hanya berisi dokumen spesifikasi/desain markdown."
 
-**Key Clarification**: Validator, Generator, and CLI **implementation** is intentionally deferred to **Phase 4**, where they will be built **on top of the MMOS SDK** (consuming its schema validation, domain models, and engine interfaces). This ensures:
-- Tools share the same validation logic as the Runtime
-- Single source of truth for domain types (SDK)
-- Tools can generate code that directly uses SDK APIs
+**Key Clarification**: Validator, Generator, dan CLI **implementation** sengaja ditunda ke **Phase 4**, tempat mereka akan dibangun **atas dasar MMOS SDK** (mengkonsumsi validasi skema, model domain, dan antarmuka engine). Hal ini memastikan:
+- Tools berbagi logika validasi yang sama dengan Runtime
+- Satu sumber kebenaran untuk tipe domain (SDK)
+- Tools dapat menghasilkan kode yang langsung menggunakan API SDK
 
-**Phase 4 Goal**: Deliver the complete Reference Implementation:
-1. **MMOS SDK** — Core library: domain models, schema validation, engine interfaces, builders
-2. **Reference Runtime** — Orchestrator + Engine implementations
-3. **Developer Tools** — Validator, Generator, CLI (built on SDK)
-4. **Sample Applications** — End-to-end demos proving the stack works
+**Tujuan Phase 4**: Menyampaikan Implementasi Referensi lengkap:
+1. **MMOS SDK** — Perpustakaan inti: model domain, validasi skema, antarmuka engine, builder
+2. **Reference Runtime** — Implementasi Orkes + Engine
+3. **Developer Tools** — Validator, Generator, CLI (dibangun atas SDK)
+4. **Sample Applications** — Demo end-to-end yang membuktikan stack bekerja
 
 ---
 
@@ -39,285 +46,493 @@
 
 | Component | Description | Priority |
 |-----------|-------------|----------|
-| **MMOS SDK** | Core library: domain models, schema validation, engine interfaces, builders | P0 |
-| **Reference Runtime** | Orchestrator + Engine implementations (Runtime, Capability, Memory, Event) | P0 |
-| **Sample Applications** | End-to-end demos: Blog Generation, News Production, Social Media | P1 |
-| **Reference UI** (optional) | Visual composer, execution monitor, marketplace browser | P2 |
+| | **MMOS SDK** | Perpustakaan inti: model domain, validasi skema, antarmuka engine, builder | P0 |
+| | **Reference Runtime** | Implementasi Orkes + Engine (Runtime, Capability, Memory, Event) | P0 |
+| | **Sample Applications** | Demo end-to-end: Blog Generation, News Production, Social Media | P1 |
+| | **Reference UI** (opsional) | Visual composer, execution monitor, marketplace browser | P2 |
 
 ---
 
-## Architecture Decisions (Locked In)
+## Keputusan Arsitektur (Terkunci)
 
-| Decision | Choice | Rationale |
-|----------|--------|-----------|
-| **Primary Language** | TypeScript (Node.js / Bun) | Aligns with CLI/Generator docs; runs everywhere; strong typing for domain models |
-| **Runtime Model** | Embedded library (not microservice) | Zero-infra dev experience; deployable as library or wrapped in service later |
-| **Package Manager** | npm (with Bun for speed) | Standard ecosystem |
-| **Validation** | AJV + MMOS schemas | Reuses Phase 3 JSON schemas directly |
-| **Testing** | Vitest | Fast, TypeScript-native |
-| **Build** | tsup / tsc | Dual ESM + CJS output |
+| Keputusan | Pilihan | Rasional |
+|-----------|---------|----------|
+| | **Bahasa Utama** | TypeScript (Node.js / Bun) | Sesuai dengan dokumentasi CLI/Generator; berjalan di partout; ketik kuat untuk model domain |
+| | **Model Runtime** | Perpustakaan tertanam (bukan mikrolayanan) | Pengalaman dev tanpa infrastruktur; dapat disebarkan sebagai perpustakaan atau dibungkus dalam layanan nanti |
+| | **Pengelola Paket** | npm (dengan Bun untuk kecepatan) | Ekosistem standar |
+| | **Validasi** | AJV + Skema MMOS | Menggunakan ulang skema JSON Fase 3 secara langsung |
+| | **Pengujian** | Vitest | Cepat, berbasis TypeScript |
+| | **Build** | tsup / tsc | Output ESM + CJS ganda |
 
 ---
 
-## Directory Structure (Target)
+## Struktur Direktori (Target)
 
 ```
 mmos/
 ├── packages/
 │   ├── sdk/                    # @mmos/sdk
 │   │   ├── src/
-│   │   │   ├── domain/         # Domain models (Composition, Workflow, Task, Agent, ...)
-│   │   │   ├── schema/         # Schema validation (AJV + generated types)
-│   │   │   ├── engine/         # Engine interfaces (RuntimeEngine, CapabilityEngine, ...)
-│   │   │   ├── builder/        # Fluent builders (CompositionBuilder, WorkflowBuilder, ...)
-│   │   │   ├── runtime/        # Runtime orchestration (Orchestrator, ExecutionContext)
-│   │   │   └── index.ts        # Public API
+│   │   │   ├── domain/         # Model domain (Komposisi, Alur Kerja, Tugas, Agen, ...)
+│   │   │   ├── schema/         # Validasi skema (AJV + jenis yang dihasilkan)
+│   │   │   ├── engine/         # Antarmuka engine (RuntimeEngine, CapabilityEngine, ...)
+│   │   │   ├── builder/        # Builder fluent (ConstructionBuilder, WorkflowBuilder, ...)
+│   │   │   ├── runtime/        # Orkestrasi runtime (Orkestrator, ExecutionContext)
+│   │   │   └── index.ts        # API Publik
 │   │   ├── package.json
 │   │   └── tsconfig.json
 │   │
-│   ├── runtime/                # @mmos/runtime (Reference Runtime)
+│   ├── runtime/                # @mmos/runtime (Referensi Runtime)
 │   │   ├── src/
-│   │   │   ├── orchestrator/   # Workflow execution coordinator
+│   │   │   ├── orchestrator/   # Koordinator eksekusi alur kerja
 │   │   │   ├── engine/
-│   │   │   │   ├── runtime/    # RuntimeEngine implementations (OpenAI, Anthropic, Local)
-│   │   │   │   ├── capability/ # CapabilityEngine (HTTP, CLI, Function, MCP)
-│   │   │   │   ├── memory/     # MemoryEngine (InMemory, Redis, Vector, File)
-│   │   │   │   └── event/      # EventEngine (InMemory, Redis, Kafka)
-│   │   │   ├── registry/       # Capability/Agent/Workflow registry
+│   │   │   │   ├── runtime/    # Implementasi RuntimeEngine (OpenAI, Anthropic, Lokal)
+│   │   │   │   ├── capability/ # CapabilityEngine (HTTP, CLI, Fungsi, MCP)
+│   │   │   │   ├── memori/     # MemoryEngine (Dalam Memori, Redis, Vektor, Berkas)
+│   │   │   │   └── event/      # EventEngine (Dalam Memori, Redis, Kafka)
+│   │   │   ├── registry/       # Registri Kapasitas/Agen/Alur Kerja
+│   │   │   ├── loops/          # 5 Loop Runtime (per docs/reference/runtime/*.md)
+│   │   │   │   ├── system/     # SystemLoop — heartbeat Runtime
+│   │   │   │   ├── scheduler/  # SchedulerLoop — pemilihan Task berikutnya
+│   │   │   │   ├── execution/  # ExecutionLoop — siklus hidup Execution
+│   │   │   │   ├── agent/      # AgentLoop — siklus penalaran Agent
+│   │   │   │   └── event/      # EventLoop — pemrosesan & dispatch Event
 │   │   │   └── index.ts
 │   │   ├── package.json
 │   │   └── tsconfig.json
 │   │
-│   └── examples/               # Sample Applications (not published)
+│   └── examples/               # Contoh Aplikasi (tidak diterbitkan)
 │       ├── blog-generation/
 │       ├── news-production/
 │       └── social-media/
 │
-├── tools/                      # Existing (CLI, Generator, Validator)
-├── specs/                      # Existing (schemas, IMS)
-├── docs/                       # Existing (architecture, ADR)
-├── implementation-plan.md      # This file
-├── package.json                # Workspace root
+├── tools/                      # Ada (CLI, Generator, Validator)
+├── specs/                      # Ada (skema, IMS)
+├── docs/                       # Ada (arsitektur, ADR)
+│   └── reference/
+│       └── runtime/
+│           ├── agent-loop.md
+│           ├── event-loop.md
+│           ├── execution-loop.md
+│           ├── scheduler-loop.md
+│           └── system-loop.md
+├── implementation-plan.md      # File ini
+├── package.json                # Akar workspace
 ├── tsconfig.base.json
 └── README.md
 ```
 
 ---
 
-## Work Breakdown
+## Pecahan Pekerjaan
 
-### Milestone 1: SDK Core (Week 1)
+### Milestone 1: Inti SDK (Minggu 1)
 
-#### 1.1 Workspace Setup
-- [x] Root `package.json` with workspaces config
-- [x] `tsconfig.base.json` with strict settings
-- [x] `packages/sdk/package.json` with dependencies: `ajv`, `ajv-formats`, `zod` (optional), `uuid`, `yaml`
-- [x] Build config: `tsup` for ESM+CJS, `vitest` for testing
+#### 1.1 Pengaturan Ruang Kerja
+- [x] Root `package.json` dengan konfigurasi workspace
+- [x] `tsconfig.base.json` dengan pengaturan ketat
+- [x] `packages/sdk/package.json` dengan dependensi: `ajv`, `ajv-formats`, `zod` (opsional), `uuid`, `yaml`
+- [x] Konfigurasi build: `tsup` untuk ESM+CJS, `vitest` untuk pengujian
 
-#### 1.2 Domain Models (`packages/sdk/src/domain/`)
-- [x] `Composition.ts` — root aggregate (per ADR-002)
-- [x] `Workflow.ts` — declarative workflow (per ADR-007)
-- [x] `Task.ts` — unit of work
-- [x] `Agent.ts` — agent definition + capabilities
-- [x] `Execution.ts` — runtime unit (per ADR-008)
-- [x] `Runtime.ts` — AI provider config
-- [x] `Capability.ts` — external capability contract (per ADR-010)
-- [x] `Memory.ts` — context provider (per ADR-011)
-- [x] `Artifact.ts` — output artifact
-- [x] `Event.ts` — immutable event (per ADR-012)
-- [x] `Identity.ts` — object identity (per ADR-013)
-- [x] `index.ts` — barrel export
+#### 1.2 Model Domain (`packages/sdk/src/domain/`)
+- [x] `Composition.ts` — agregat akar (per ADR-002)
+- [x] `Workflow.ts` — alur kerja deklaratif (per ADR-007)
+- [x] `Task.ts` — unit kerja
+- [x] `Agent.ts` — definisi agen + kapasitas
+- [x] `Execution.ts` — unit runtime (per ADR-008)
+- [x] `Runtime.ts` — konfigurasi penyedia AI
+- [x] `Capability.ts` — kontrak kapasitas eksternal (per ADR-010)
+- [x] `Memory.ts` — penyedia konteks (per ADR-011)
+- [x] `Artifact.ts` — artefak keluaran
+- [x] `Event.ts` — peristiwa tidak dapat diubah (per ADR-012)
+- [x] `Identity.ts` — identitas objek (per ADR-013)
+- [x] `index.ts` — ekspor tambal
 
-#### 1.3 Schema Validation (`packages/sdk/src/schema/`)
-- [x] Load all 10 JSON schemas from `specs/schemas/*.schema.json`
-- [x] Compile AJV instances per schema
-- [x] `validate(schemaName, data)` function
-- [x] TypeScript types generated from schemas (`SchemaName` union, per-schema types)
-- [x] Unit tests: valid/invalid payloads per schema (all 10 schemas, self-validation)
+#### 1.3 Validasi Skema (`packages/sdk/src/schema/`)
+- [x] Muat semua 10 skema JSON dari `specs/schemas/*.schema.json`
+- [x] Kompilasi instance AJV per skema
+- [x] `validate(schemaName, data)` fungsi
+- [x] Jenis TypeScript dihasilkan dari skema (`SchemaName` union, jenis per-skema)
+- [x] Uji unit: payload valid/tidak valid per skema (semua 10 skema, validasi sendiri)
 
-#### 1.4 Engine Interfaces (`packages/sdk/src/engine/`)
-- [x] `RuntimeEngine` — `execute(prompt, config): Promise<Result>`
+#### 1.4 Antarmuka Engine (`packages/sdk/src/engine/`)
+- [x] `RuntimeEngine` — `execute(prompt, config): Promise<Hasil>`
 - [x] `CapabilityEngine` — `invoke(capability, input): Promise<Output>`
-- [x] `MemoryEngine` — `store(key, value)`, `retrieve(query)`, `search(vector)`
-- [x] `EventEngine` — `publish(event)`, `subscribe(type, handler)`
-- [x] All interfaces in `engine/index.ts`
+- [x] `MemoryEngine` — `simpan(kunci, nilai)`, `ambil(kueri)`, `cari(vektor)`
+- [x] `EventEngine` — `terbitkan(peristiwa)`, `langgan(jenis, penangan)`
+- [x] Semua antarmuka di `engine/index.ts`
 
-#### 1.5 Builders (`packages/sdk/src/builder/`)
-- [x] `CompositionBuilder` — fluent API for Composition
-- [x] `WorkflowBuilder` — declarative workflow construction
-- [x] `TaskBuilder` — task with agent/capability binding
-- [x] `AgentBuilder` — agent with capabilities, memory, runtime
-- [x] `ExecutionBuilder` — runtime execution config
+#### 1.5 Pembuat (`packages/sdk/src/builder/`)
+- [x] `CompositionBuilder` — API fluent untuk Komposisi
+- [x] `WorkflowBuilder` — konstruksi alur kerja deklaratif
+- [x] `TaskBuilder` — tugas dengan ikatan agen/kapasitas
+- [x] `AgentBuilder` — agen dengan kapasitas, memori, runtime
+- [x] `ExecutionBuilder` — konfigurasi eksekusi runtime
 
-#### 1.6 Runtime Orchestration (`packages/sdk/src/runtime/`)
-- [x] `Orchestrator` — coordinates workflow execution
-- [x] `ExecutionContext` — carries state, memory, events during execution
-- [x] `ExecutionResult` — output + events + artifacts
-- [x] Event-driven step execution (per ADR-014)
+#### 1.6 Orkestrasi Runtime (`packages/sdk/src/runtime/`)
+- [x] `Orkestrator` — mengoorkestrasi eksekusi alur kerja
+- [x] `ExecutionContext` — membawa status, memori, peristiwa selama eksekusi
+- [x] `ExecutionResult` — keluaran + peristiwa + artefak
+- [x] Eksekusi berbasis peristiwa (per ADR-014)
 
-#### 1.7 SDK Entry Point & Tests
-- [x] `packages/sdk/src/index.ts` — public API exports
-- [x] Unit tests: domain model creation (identity, metadata, create-functions), validation (all 10 JSON schemas), builder patterns (Composition, Workflow, Task)
-- [ ] Integration test: minimal Composition → Workflow → Execution (mocked engines)
-- [x] Build verification: `npm run build` produces `dist/` with types
+#### 1.7 Titik Masuk SDK & Uji
+- [x] `packages/sdk/src/index.ts` — ekspor API publik
+- [x] Uji unit: pembuatan model domain (identitas, metadata, fungsi buat), validasi (semua 10 skema JSON), pola pembuat (Komposisi, Alur Kerja, Tugas)
+- [ ] Uji integrasi: Komposisi minimal → Alur Kerja → Eksekusi (mesin tiruan)
+- [x] Verifikasi build: `npm run build` menghasilkan `dist/` dengan jenis
 
 ---
 
-### Milestone 2: Reference Runtime (Week 2)
+### Milestone 2: Referensi Runtime (Minggu 2)
 
-#### 2.1 Runtime Package Setup
-- [x] `packages/runtime/package.json` — depends on `@mmos/sdk`
-- [x] Engine implementations as separate modules
+#### 2.1 Pengaturan Paket Runtime
+- [x] `packages/runtime/package.json` — bergantung pada `@mmos/sdk`
+- [x] Implementasi engine sebagai modul terpisah
 
-#### 2.2 Orchestrator Implementation (`packages/runtime/src/orchestrator/`)
-- [x] `DefaultOrchestrator` implementing orchestration logic
-- [x] Workflow → Task DAG resolution
-- [x] Task scheduling (sequential, parallel, conditional)
-- [x] Error handling: retry, fallback, compensation
-- [x] Human-in-the-loop checkpoints (per ADR-015)
+#### 2.2 Implementasi Orkestrator (`packages/runtime/src/orchestrator/`)
+- [x] `DefaultOrchestrator` — menerapkan logika orkestrasi
+- [x] Resolusi DAG Alur Kerja → Tugas
+- [x] Penjadwalan Tugas (berurutan, paralel, bersyarat)
+- [x] Penanganan kesalahan: coba lagi, fallback, kompensasi
+- [x] Pemeriksaan titik masuk manusia (per ADR-015)
 
-#### 2.3 Engine Implementations
+#### 2.3 Implementasi Engine
 
 **RuntimeEngine** (`packages/runtime/src/engine/runtime/`)
-- [x] `OpenAIRuntimeEngine` — OpenAI-compatible API
-- [x] `AnthropicRuntimeEngine` — Anthropic API
-- [x] `LocalRuntimeEngine` — Ollama / llama.cpp / local models
-- [x] `MockRuntimeEngine` — for testing
+- [x] `OpenAIRuntimeEngine` — API kompatibel OpenAI
+- [x] `AnthropicRuntimeEngine` — API Anthropic
+- [x] `LocalRuntimeEngine` — Ollama / llama.cpp / model lokal
+- [x] `MockRuntimeEngine` — untuk pengujian
 
 **CapabilityEngine** (`packages/runtime/src/engine/capability/`)
-- [x] `HttpCapabilityEngine` — REST/GraphQL calls
-- [x] `CliCapabilityEngine` — shell command execution
-- [x] `FunctionCapabilityEngine` — in-process TypeScript functions
-- [x] `McpCapabilityEngine` — Model Context Protocol
+- [x] `HttpCapabilityEngine` — panggilan REST/GraphQL
+- [x] `CliCapabilityEngine` — eksekusi perintah shell
+- [x] `FunctionCapabilityEngine` — fungsi TypeScript dalam proses
+- [x] `McpCapabilityEngine` — Protokol Konteks Model
 
 **MemoryEngine** (`packages/runtime/src/engine/memory/`)
-- [x] `InMemoryMemoryEngine` — Map-based (dev)
-- [x] `FileMemoryEngine` — JSON/Markdown files
-- [x] `RedisMemoryEngine` — Redis + vector (prod, with in-memory fallback)
-- [x] `VectorMemoryEngine` — embedding-based search (cosine/euclidean/dot-product)
+- [x] `InMemoryMemoryEngine` — berbasis Map (dev)
+- [x] `FileMemoryEngine` — berkas JSON/Markdown
+- [x] `RedisMemoryEngine` — Redis + vektor (prod, dengan fallback dalam memori)
+- [x] `VectorMemoryEngine` — pencarian berbasis penyamaan (kosinus/euclidean/dot-product)
 
 **EventEngine** (`packages/runtime/src/engine/event/`)
-- [x] `InMemoryEventEngine` — EventEmitter-based (dev)
-- [x] `RedisEventEngine` — Redis Streams (prod, with in-memory fallback)
-- [x] `KafkaEventEngine` — Apache Kafka (prod, with in-memory fallback)
+- [x] `InMemoryEventEngine` — berbasis EventEmitter (dev)
+- [x] `RedisEventEngine` — Aliran Redis (prod, dengan fallback dalam memori)
+- [x] `KafkaEventEngine` — Apache Kafka (prod, dengan fallback dalam memori)
 
-#### 2.4 Registry (`packages/runtime/src/registry/`)
-- [x] `CapabilityRegistry` — load capabilities from schema + implementations
-- [x] `AgentRegistry` — agent definitions
-- [x] `WorkflowRegistry` — workflow templates
-- [x] Plugin system for custom engines
+#### 2.4 Registri (`packages/runtime/src/registry/`)
+- [x] `CapabilityRegistry` — memuat kapasitas dari skema + implementasi
+- [x] `AgentRegistry` — definisi agen
+- [x] `WorkflowRegistry` — templat alur kerja
+- [x] Sistem plugin untuk mesin kustom
 
-#### 2.5 Runtime Integration Tests
-- [ ] End-to-end: Composition → Orchestrator → Engines → Result
-- [ ] Test with Blog Generation workflow (mock engines first)
-- [ ] Test event emission, memory persistence, capability invocation
+#### 2.5 Uji Integrasi Runtime
+- [ ] Uji akhir ke akhir: Komposisi → Orkestrator → Mesin → Hasil
+- [ ] Uji dengan alur kerja Blog Generation (mesin tiruan pertama)
+- [ ] Uji emissi peristiwa, persistenan memori, pemanggilan kapasitas
+
+#### 2.6 Arsitektur 5 Loop Runtime (Baru — per `docs/reference/runtime/*.md`)
+
+> **Latar Belakang**: Fase 3 telah menghasilkan 5 dokumen referensi runtime
+> (`system-loop.md`, `scheduler-loop.md`, `execution-loop.md`, `agent-loop.md`,
+> `event-loop.md`) yang menjelaskan siklus internal Runtime. Dokumen-dokumen
+> tersebut saat ini **belum diimplementasikan** sebagai modul terpisah di
+> `@mmos/runtime`. Milestone ini menerjemahkan kelima dokumen referensi menjadi
+> modul-modul kode yang dapat diuji, sehingga Runtime memiliki pemisahan
+> tanggung jawab yang jelas (sesuai ADR-003 Orchestrator Never Works, ADR-004
+> Engine Separation, ADR-009 Runtime is Stateless, ADR-014 Event-Driven
+> Architecture).
+
+**Pohon Target**:
+
+```
+packages/runtime/src/loops/
+├── system/         # SystemLoop — detak jantung Runtime
+├── scheduler/      # SchedulerLoop — pemilihan Task
+├── execution/      # ExecutionLoop — siklus hidup Execution
+├── agent/          # AgentLoop — siklus penalaran Agent
+└── event/          # EventLoop — pemrosesan & dispatch Event
+```
+
+##### 2.6.1 System Loop (`packages/runtime/src/loops/system/`)
+- [x] `system-loop.ts` — implementasi `RuntimeManager` yang menjalankan
+      `while (runtime.isRunning) { processExecutions(); }`
+- [x] `iteration-step.ts` — 10 langkah iterasi (Read Events → Update State →
+      Select Execution → Evaluate Workflow → Select Task → Dispatch Engine →
+      Collect Result → Update Memory → Publish Event → Repeat)
+- [x] `system-state.ts` — state evaluator (Pending / Ready / Running / Waiting /
+      Completed) sesuai execution state machine
+- [x] `shutdown-handler.ts` — graceful shutdown (Stop Accepting → Finish Active
+      → Flush Events → Persist State → Shutdown)
+- [x] `parallel-execution-coordinator.ts` — multi-execution dispatcher
+- [x] `system-loop.test.ts` — uji heartbeat, paralelisme, shutdown terkontrol
+- [x] `index.ts` — ekspor publik
+
+##### 2.6.2 Scheduler Loop (`packages/runtime/src/loops/scheduler/`)
+- [x] `scheduler.ts` — `Scheduler` yang menjawab 3 pertanyaan:
+      *What? When? Where?*
+- [x] `priority-evaluator.ts` — evaluasi prioritas (Critical/High/Normal/Low)
+- [x] `dependency-evaluator.ts` — `Satisfied?` → Wait / Ready
+- [x] `capability-evaluator.ts` — validasi ketersediaan Capability via
+      `CapabilityRegistry`
+- [x] `resource-evaluator.ts` — Resource Availability (CPU/Memory/GPU/Workers)
+- [x] `ready-queue.ts` — struktur data `Ready Queue` dinamis
+- [x] `retry-queue.ts` — `Retry Queue` sesuai RetryPolicy
+- [x] `fair-selection.ts` — anti-starvation untuk multi-execution
+- [x] `scheduler-loop.test.ts` — uji prioritas, dependency, retry, fairness
+- [x] `index.ts` — ekspor publik
+
+##### 2.6.3 Execution Loop (`packages/runtime/src/loops/execution/`)
+- [x] `execution-loop.ts` — pemuatan Workflow + Composition + Context
+      Initialization (memperluas konsep `DefaultOrchestrator`)
+- [x] `execution-state-machine.ts` — transisi state
+      (Created → Initialized → Running → Waiting → Running → Completed, atau
+      Failed → Retry, atau Cancelled)
+- [x] `task-dispatcher.ts` — eksekusi Task via Orchestrator
+      (**tidak pernah memanggil Engine secara langsung**)
+- [x] `result-collector.ts` — Validate → Normalize → Update Execution
+- [x] `memory-synchronizer.ts` — Read Context → Merge Result → Write Memory
+- [x] `retry-handler.ts` — penerapan `RetryPolicy`
+- [x] `cancellation-handler.ts` — Stop Dispatch → Complete Active Task →
+      Cancelled (tanpa menghapus Event/Memory)
+- [x] `execution-loop.test.ts` — uji lifecycle, retry, cancellation,
+      parallel tasks
+- [x] `index.ts` — ekspor publik
+
+##### 2.6.4 Agent Loop (`packages/runtime/src/loops/agent/`)
+- [x] `agent-loop.ts` — `run(task, context)` Receive Task → Done
+- [x] `context-builder.ts` — Task Input + Execution Context + Memory Context +
+      Composition Context + Agent Context
+- [x] `objective-analyzer.ts` — Objective → Constraints → Requirements →
+      Execution Plan (tidak mengubah Objective)
+- [x] `reasoner.ts` — Context → Reason → Decision → Action Plan
+      (dengan iterasi internal)
+- [x] `capability-selector.ts` — Task → Capability Registry → Matching → Selected
+      (berdasarkan kontrak, bukan implementasi)
+- [x] `engine-invoker.ts` — Agent → Orchestrator → Engine → Result
+      (tidak memanggil Engine secara langsung)
+- [x] `result-evaluator.ts` — Quality Check → Accepted? (loop kembali ke
+      Reason jika tidak)
+- [x] `output-generator.ts` — Validated Result → Normalize → Artifact → Output
+- [x] `memory-updater.ts` — delegasi ke MemoryEngine (Agent tidak menyimpan
+      Memory secara langsung)
+- [x] `human-in-loop.ts` — Human Approval Required → Wait → Approved? →
+      Continue / Cancelled (per ADR-015)
+- [x] `agent-loop.test.ts` — uji reasoning, capability selection, iteration,
+      human-in-the-loop, failure handling
+- [x] `index.ts` — ekspor publik
+
+##### 2.6.5 Event Loop (`packages/runtime/src/loops/event/`)
+- [x] `event-loop.ts` — Event Created → Validate → Publish → Queue → Select →
+      Dispatch → Subscribers → Complete → Archive
+- [x] `event-validator.ts` — Validasi Schema + Validasi Metadata
+- [x] `event-queue.ts` — antrian dengan urutan deterministik
+- [x] `event-selector.ts` — pemilihan event berikutnya sesuai kebijakan Runtime
+- [x] `event-dispatcher.ts` — pengiriman ke 1..N Subscribers dengan
+      isolasi kesalahan (satu Subscriber gagal tidak menghentikan yang lain)
+- [x] `subscriber-registry.ts` — pendaftaran subscriber per kategori
+      (Execution, Workflow, Task, Capability, Memory, Runtime, Plugin, System)
+- [x] `retry-policy.ts` — Handler Failed → Retry → Dispatch Again
+- [x] `dead-letter-queue.ts` — Retry Failed → DLQ → Manual Inspection
+- [x] `event-archiver.ts` — Read-Only archive (Event immutable per ADR-012)
+- [x] `event-loop.test.ts` — uji validasi, ordering, retry, DLQ, immutability,
+      kategori event
+- [x] `index.ts` — ekspor publik
+
+##### 2.6.6 Kepatuhan Lintas-Loop
+- [x] Setiap modul Loop menggunakan **Engine** via `EngineBindings` (tidak
+      pernah langsung; sesuai ADR-003)
+- [x] Setiap Loop stateless; state permanen di luar Loop (sesuai ADR-009)
+- [x] Setiap perubahan signifikan mempublikasikan `Event` (sesuai ADR-014)
+- [x] `packages/runtime/src/loops/index.ts` — barrel ekspor
+- [x] `packages/runtime/src/index.ts` — re-ekspor modul Loop
+- [ ] Uji integrasi: simulasi SystemLoop → SchedulerLoop → ExecutionLoop →
+      AgentLoop + EventLoop end-to-end dengan engine tiruan
 
 ---
 
-### Milestone 3: Sample Applications (Week 3)
+### Milestone 3: Aplikasi Contoh (Minggu 3)
 
-#### 3.1 Blog Generation (`packages/examples/blog-generation/`)
-- [ ] Composition: `blog-generation.composition.json`
-- [ ] Workflows: Research → Outline → Write → Review → Publish
-- [ ] Agents: Researcher, Writer, Editor, Publisher
-- [ ] Capabilities: `web.search`, `text.generate`, `text.summarize`, `cms.publish`
-- [ ] Runtime config: OpenAI + local memory + HTTP capability
-- [ ] CLI entry: `npx mmos run blog-generation --topic "AI Trends"`
+#### 3.1 Pembuatan Blog (`packages/examples/blog-generation/`)
+- [] Create directory structure: `packages/examples/blog-generation/`
+- [] Create composition file: `blog-generation.composition.json`
+- [] Define workflow: Research → Outline → Write → Review → Publish
+- [] Create agent definitions:
+    - Researcher agent with web.search capability
+    - Writer agent with text.generate capability
+    - Editor agent with text.summarize capability
+    - Publisher agent with cms.publish capability
+- [] Implement capability implementations:
+    - web.search: HTTP capability for web search
+    - text.generate: Function capability for text generation
+    - text.summarize: Function capability for text summarization
+    - cms.publish: HTTP capability for CMS publishing
+- [] Configure runtime: OpenAI + local memory + HTTP capability
+- [] Create example runner script: `run-blog-example.ts`
+- [] Create environment template: `.env.example`
+- [] Create README with usage instructions
+- [] Test end-to-end: `npx mmos run blog-generation --topic "AI Trends"`
 
-#### 3.2 News Production (`packages/examples/news-production/`)
-- [ ] Composition: `news-production.composition.json`
-- [ ] Workflows: Ingest → Verify → Write → Translate → Distribute
-- [ ] Agents: Monitor, FactChecker, Journalist, Translator, Distributor
-- [ ] Capabilities: `rss.fetch`, `news.verify`, `text.translate`, `social.post`
+#### 3.2 Produksi Berita (`packages/examples/news-production/`)
+- [ ] Create directory structure: `packages/examples/news-production/`
+- [ ] Create composition file: `news-production.composition.json`
+- [ ] Define workflow: Ingest → Verify → Write → Translate → Distribute
+- [ ] Create agent definitions:
+    - Monitor agent with rss.fetch capability
+    - FactChecker agent with news.verify capability
+    - Journalist agent with text.generate capability
+    - Translator agent with text.translate capability
+    - Distributor agent with social.post capability
+- [ ] Implement capability implementations:
+    - rss.fetch: HTTP capability for RSS feed consumption
+    - news.verify: Function capability for fact-checking
+    - text.translate: Function capability for text translation
+    - social.post: HTTP capability for social media posting
+- [ ] Configure runtime: OpenAI + local memory + HTTP capability
+- [ ] Create example runner script: `run-news-example.ts`
+- [ ] Create environment template: `.env.example`
+- [ ] Create README with usage instructions
+- [ ] Test end-to-end: `npx mmos run news-production --topic "AI Developments"`
 
-#### 3.3 Social Media (`packages/examples/social-media/`)
-- [ ] Composition: `social-media.composition.json`
-- [ ] Workflows: Trend → Plan → Create → Schedule → Analyze
-- [ ] Agents: TrendAnalyzer, ContentPlanner, Creator, Scheduler, Analyst
-- [ ] Capabilities: `social.trends`, `image.generate`, `video.render`, `social.schedule`
+#### 3.3 Media Sosial (`packages/examples/social-media/`)
+- [ ] Create directory structure: `packages/examples/social-media/`
+- [ ] Create composition file: `social-media.composition.json`
+- [ ] Define workflow: Trend → Plan → Create → Schedule → Analyze
+- [ ] Create agent definitions:
+    - TrendAnalyzer agent with social.trends capability
+    - ContentPlanner agent with none (planning agent)
+    - Creator agent with image.generate and video.render capabilities
+    - Scheduler agent with social.schedule capability
+    - Analyst agent with none (analytics agent)
+- [ ] Implement capability implementations:
+    - social.trends: HTTP capability for social media trend analysis
+    - image.generate: Function capability for image generation
+    - video.render: Function capability for video rendering
+    - social.schedule: HTTP capability for social media scheduling
+- [ ] Configure runtime: OpenAI + local memory + HTTP capability
+- [ ] Create example runner script: `run-social-example.ts`
+- [ ] Create environment template: `.env.example`
+- [ ] Create README with usage instructions
+- [ ] Test end-to-end: `npx mmos run social-media --topic "Product Launch"`
 
-#### 3.4 Example Runner
-- [ ] Shared `run-example.ts` script
-- [ ] Environment config (`.env.example`)
-- [ ] README per example with run instructions
+#### 3.4 Pelari Contoh
+- [ ] Create shared `run-example.ts` script in `packages/examples/`
+- [ ] Create environment template: `.env.example` in `packages/examples/`
+- [ ] Create README with usage instructions for each example
+- [ ] Implement common utility functions for examples
+- [ ] Create shared configuration for examples
 
 ---
 
-### Milestone 4: Reference UI (Optional, Parallel) — P2
-
-- [ ] Web-based Composition visualizer (React + React Flow)
-- [ ] Execution timeline viewer (event-sourced replay)
-- [ ] Capability marketplace browser
-- [ ] Deployable as static site or Electron app
+### Milestone 4: Referensi UI (Opsional, Paralel) — P2
+- [ ] Visualisasi komposisi berbasis web (React + React Flow)
+- [ ] Penonton timeline eksekusi (pemutaran berdasarkan peristiwa)
+- [ ] Browser pasar kapasitas
+- [ ] Dapat disebarkan sebagai situs statis atau aplikasi Electron
 
 ---
 
-## Dependencies Between Milestones
+## Ketergantungan Antar Milestone
 
 ```
 Milestone 1 (SDK) ──────┬──────► Milestone 2 (Runtime)
                         │
-                        └──────► Milestone 3 (Examples)
-                                               │
-                                               ▼
-                                    Milestone 4 (UI) [optional]
+                        └──────► Milestone 3 (Contoh)
+                                           │
+                                           ▼
+                                    Milestone 4 (UI) [opsional]
 ```
 
-- M2 requires M1 complete (SDK published locally via `npm link` or workspace protocol)
-- M3 requires M2 complete (Runtime engines)
-- M4 can start after M1 (consumes SDK types)
+- M2 memerlukan M1 selesai (SDK dipublikasikan secara lokal melalui `npm link` atau protokol workspace)
+- M3 memerlukan M2 selesai (mesin runtime)
+- M4 dapat dimulai setelah M1 (mengonsumsi jenis SDK)
 
 ---
 
-## Quality Gates
+## Gerbang Kualitas
 
-| Gate | Criteria |
-|------|----------|
-| **M1 Done** | All domain models compile, schemas validate, builders work, unit tests pass |
-| **M2 Done** | Orchestrator executes a 3-step workflow with mocked engines; events emitted; memory persisted |
-| **M3 Done** | Blog Generation runs end-to-end with real OpenAI API (or local model); produces markdown output |
-| **M4 Done** | UI loads composition, shows execution graph, replays events |
-
----
-
-## Risk Mitigation
-
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Schema ↔ TypeScript drift | High | Generate types from JSON Schema in build step; CI check |
-| Engine interface changes | Medium | Keep interfaces in SDK; engines implement — version together |
-| Provider API changes | Low | Adapter pattern in RuntimeEngine; test against multiple providers |
-| Performance (vector search) | Medium | Start with in-memory; swap to Redis/pgvector later |
-| Scope creep in Examples | Medium | Time-box each example to 2 days max; cut features if needed |
+| Gerbang | Kriteria |
+|---------|----------|
+| | **M1 Selesai** | Semua model domain terkompilasi, skema divalidasi, builder berfungsi, uji unit lulus |
+| | **M2 Selesai** | Orkestrator mengeksekusi alur kerja 3 langkah dengan mesin tiruan; peristiwa dipancarkan; memori bertahan |
+| | **M3 Selesai** | Blog Generation berjalan end-to-end dengan API OpenAI nyata (atau model lokal); menghasilkan keluaran markdown |
+| | **M4 Selesai** | UI memuat komposisi, menampilkan grafik eksekusi, memutar peristiwa |
 
 ---
 
-## Definition of Done (Phase 4)
+## Mitigasi Risiko
 
-- [ ] `@mmos/sdk` published to npm (or GitHub Packages) with types
-- [ ] `@mmos/runtime` published with at least 2 RuntimeEngine impls, 1 MemoryEngine, 1 EventEngine
-- [ ] At least 1 sample app runs end-to-end with real AI provider
-- [ ] Documentation: `docs/reference/sdk.md`, `docs/reference/runtime.md`
-- [ ] CI: lint, typecheck, test, build on every PR
-- [ ] CHANGELOG.md updated with Phase 4 entries
-
----
-
-## Next Actions (Immediate)
-
-1. **Create workspace scaffolding** — root `package.json`, `tsconfig.base.json`, `packages/` dirs
-2. **Initialize SDK package** — domain models first (they drive everything else)
-3. **Set up CI pipeline** — GitHub Actions: lint + typecheck + test + build
+| Risiko | Dampak | Mitigasi |
+|--------|--------|----------|
+| | Deret Skema ↔ TypeScript | Tinggi | Menghasilkan jenis dari Skema JSON di langkah build; pemeriksaan CI |
+| | Perubahan antarmuka engine | Menengah | Simpan antarmuka di SDK; mesin mengimplementasikan — versi bersama |
+| | Perubahan API penyedia | Rendah | Pola adaptor di RuntimeEngine; uji terhadap beberapa penyedia |
+| | Kinerja (pencarian vektor) | Sedang | Mulai dengan dalam memori; tukar ke Redis/pgvector nanti |
+| | Screep contoh | Sedang | Waktu tinjau setiap contoh hingga 2 hari maks; potong fitur jika diperlukan |
 
 ---
 
-## Notes
+## Definisi Selesai (Fase 4)
 
-- All JSON schemas in `specs/schemas/` are the **source of truth** for validation
-- ADRs in `adr/` are **binding** — implementation must comply
-- Generator/Validator/CLI in `tools/` will be implemented in TypeScript later to consume SDK
-- This plan is a living document — update as decisions are made
+- [ ] `@mmos/sdk` diterbitkan ke npm (atau GitHub Packages) dengan jenis
+- [ ] `@mmos/runtime` diterbitkan dengan setidaknya 2 implementasi RuntimeEngine, 1 MemoryEngine, 1 EventEngine
+- [ ] **5 Loop Runtime terimplementasi** di `packages/runtime/src/loops/`:
+      - [ ] `SystemLoop` (heartbeat) + uji paralelisme & shutdown
+      - [ ] `SchedulerLoop` (prioritas, dependency, retry, fairness) + uji
+      - [ ] `ExecutionLoop` (lifecycle, retry, cancellation) + uji
+      - [ ] `AgentLoop` (reasoning, capability, human-in-the-loop) + uji
+      - [ ] `EventLoop` (validasi, queue, retry, DLQ) + uji
+      - [ ] Uji integrasi lintas-loop end-to-end
+- [ ] Setidaknya 1 aplikasi contoh berjalan end-to-end dengan penyedia AI nyata
+- [ ] Dokumentasi: `docs/reference/sdk.md`, `docs/reference/runtime.md`,
+      `docs/reference/runtime/agent-loop.md`, `docs/reference/runtime/event-loop.md`,
+      `docs/reference/runtime/execution-loop.md`,
+      `docs/reference/runtime/scheduler-loop.md`,
+      `docs/reference/runtime/system-loop.md`
+- [ ] CI: latik, pemeriksaan jenis, uji, build pada setiap PR
+- [ ] CHANGELOG.md diperbarui dengan entri Fase 4
 
 ---
 
-*End of Implementation Plan*
+## Tindakan Berikutnya (Segera)
+
+1. **Buat kerangka ruang kerja** — `package.json` akar, `tsconfig.base.json`, direktori `packages/`
+2. **Inisialisasi paket SDK** — model domain pertama (mereka mengemudikan segalanya lain)
+3. **Siapkan alur kerja CI** — GitHub Actions: lint + typecheck + test + build
+
+---
+
+## Catatan
+
+- Semua skema JSON di `specs/schemas/` adalah **sumber kebenaran** untuk validasi
+- ADR di `adr/` adalah **mengikat** — implementasi harus mematuhi
+- Generator/Validator/CLI di `tools/` akan diimplementasikan dalam TypeScript nanti untuk mengkonsumsi SDK
+- **5 dokumen referensi runtime** di `docs/reference/runtime/*.md` adalah
+  **spesifikasi perilaku** untuk kelima loop Runtime. Milestone 2.6 menerjemahkan
+  dokumen-dokumen tersebut menjadi modul-modul kode di
+  `packages/runtime/src/loops/{system,scheduler,execution,agent,event}/`,
+  dengan pemisahan tegas: setiap Loop mengakses Engine hanya via Orchestrator
+  (ADR-003), tidak menyimpan state permanen (ADR-009), dan mempublikasikan
+  Event untuk setiap perubahan signifikan (ADR-014).
+- Rencana ini adalah dokumen hidup — perbarui ketika keputusan dibuat
+
+---
+
+*Akhir dari Rencana Implementasi*
+</task_progress>
+- [x] List files in docs/reference/runtime
+- [x] Read agent-loop.md
+- [x] Read event-loop.md
+- [x] Read execution-loop.md
+- [x] Read scheduler-loop.md
+- [x] Read system-loop.md
+- [x] Read implementation-plan.md
+- [x] Update implementation-plan.md to include the 5 runtime reference documents
+- [x] Fix typo in Milestone 4 section
+- [x] Enhance 3.1 Blog Generation section with detailed implementation steps
+- [x] Enhance 3.2 News Production section with detailed implementation steps
+- [x] Enhance 3.3 Social Media section with detailed implementation steps
+- [x] Enhance 3.4 Example Runner section with detailed implementation steps
+</task_progress>
+</write_to_file>

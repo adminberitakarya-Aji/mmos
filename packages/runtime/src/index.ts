@@ -21,3 +21,6 @@ export * from './engine/index.js';
 
 // Registry exports
 export * from './registry/index.js';
+
+// 5 Loop Runtime exports (per docs/reference/runtime/*.md)
+export * from './loops/index.js';

@@ -166,46 +166,46 @@ mmos/
 ### Milestone 2: Reference Runtime (Week 2)
 
 #### 2.1 Runtime Package Setup
-- [ ] `packages/runtime/package.json` — depends on `@mmos/sdk`
-- [ ] Engine implementations as separate modules
+- [x] `packages/runtime/package.json` — depends on `@mmos/sdk`
+- [x] Engine implementations as separate modules
 
 #### 2.2 Orchestrator Implementation (`packages/runtime/src/orchestrator/`)
-- [ ] `DefaultOrchestrator` implementing orchestration logic
-- [ ] Workflow → Task DAG resolution
-- [ ] Task scheduling (sequential, parallel, conditional)
-- [ ] Error handling: retry, fallback, compensation
-- [ ] Human-in-the-loop checkpoints (per ADR-015)
+- [x] `DefaultOrchestrator` implementing orchestration logic
+- [x] Workflow → Task DAG resolution
+- [x] Task scheduling (sequential, parallel, conditional)
+- [x] Error handling: retry, fallback, compensation
+- [x] Human-in-the-loop checkpoints (per ADR-015)
 
 #### 2.3 Engine Implementations
 
 **RuntimeEngine** (`packages/runtime/src/engine/runtime/`)
-- [ ] `OpenAIRuntimeEngine` — OpenAI-compatible API
-- [ ] `AnthropicRuntimeEngine` — Anthropic API
-- [ ] `LocalRuntimeEngine` — Ollama / llama.cpp / local models
-- [ ] `MockRuntimeEngine` — for testing
+- [x] `OpenAIRuntimeEngine` — OpenAI-compatible API
+- [x] `AnthropicRuntimeEngine` — Anthropic API
+- [x] `LocalRuntimeEngine` — Ollama / llama.cpp / local models
+- [x] `MockRuntimeEngine` — for testing
 
 **CapabilityEngine** (`packages/runtime/src/engine/capability/`)
-- [ ] `HttpCapabilityEngine` — REST/GraphQL calls
-- [ ] `CliCapabilityEngine` — shell command execution
-- [ ] `FunctionCapabilityEngine` — in-process TypeScript functions
-- [ ] `McpCapabilityEngine` — Model Context Protocol (future)
+- [x] `HttpCapabilityEngine` — REST/GraphQL calls
+- [x] `CliCapabilityEngine` — shell command execution
+- [x] `FunctionCapabilityEngine` — in-process TypeScript functions
+- [x] `McpCapabilityEngine` — Model Context Protocol
 
 **MemoryEngine** (`packages/runtime/src/engine/memory/`)
-- [ ] `InMemoryMemoryEngine` — Map-based (dev)
-- [ ] `FileMemoryEngine` — JSON/Markdown files
-- [ ] `RedisMemoryEngine` — Redis + vector (prod)
-- [ ] `VectorMemoryEngine` — embedding-based search (pgvector, Pinecone, etc.)
+- [x] `InMemoryMemoryEngine` — Map-based (dev)
+- [x] `FileMemoryEngine` — JSON/Markdown files
+- [x] `RedisMemoryEngine` — Redis + vector (prod, with in-memory fallback)
+- [x] `VectorMemoryEngine` — embedding-based search (cosine/euclidean/dot-product)
 
 **EventEngine** (`packages/runtime/src/engine/event/`)
-- [ ] `InMemoryEventEngine` — EventEmitter-based (dev)
-- [ ] `RedisEventEngine` — Redis Streams (prod)
-- [ ] `KafkaEventEngine` — Apache Kafka (prod)
+- [x] `InMemoryEventEngine` — EventEmitter-based (dev)
+- [x] `RedisEventEngine` — Redis Streams (prod, with in-memory fallback)
+- [x] `KafkaEventEngine` — Apache Kafka (prod, with in-memory fallback)
 
 #### 2.4 Registry (`packages/runtime/src/registry/`)
-- [ ] `CapabilityRegistry` — load capabilities from schema + implementations
-- [ ] `AgentRegistry` — agent definitions
-- [ ] `WorkflowRegistry` — workflow templates
-- [ ] Plugin system for custom engines
+- [x] `CapabilityRegistry` — load capabilities from schema + implementations
+- [x] `AgentRegistry` — agent definitions
+- [x] `WorkflowRegistry` — workflow templates
+- [x] Plugin system for custom engines
 
 #### 2.5 Runtime Integration Tests
 - [ ] End-to-end: Composition → Orchestrator → Engines → Result

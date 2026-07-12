@@ -1,16 +1,23 @@
-// MMOS Reference Runtime
-// Orchestrator + Engine implementations
-//
-// Sub-modules (full implementations in Milestone 2):
-//   orchestrator/ — Orchestrator implementation (2.2)
-//   engine/        — Built-in Engine implementations (2.3)
-//   registry/      — Capability Registry (2.4)
+/**
+ * MMOS Runtime Package - Reference Implementation
+ * 
+ * This is the main entry point for the @mmos/runtime package.
+ * It provides orchestrator and engine implementations.
+ * 
+ * Per ADR-001: Composition is the Heart
+ * Per ADR-004: Engine Separation
+ * Per ADR-007: Workflow is Declarative
+ * Per ADR-008: Execution is Runtime Unit
+ * Per ADR-009: Runtime is Stateless
+ * Per ADR-014: Event-Driven Architecture
+ * Per ADR-015: Human-in-the-Loop
+ */
 
-// Re-exports from SDK runtime module
-export type {
-  Orchestrator,
-  OrchestratorOptions,
-  EngineBindings,
-} from '@mmos/sdk/runtime';
+// Orchestrator exports
+export * from './orchestrator/index.js';
 
-export { BaseOrchestrator } from '@mmos/sdk/runtime';
+// Engine exports
+export * from './engine/index.js';
+
+// Registry exports
+export * from './registry/index.js';

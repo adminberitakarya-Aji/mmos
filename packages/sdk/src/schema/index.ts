@@ -44,7 +44,31 @@ export interface SchemaCompilationResult {
   error?: string;
 }
 
-const SCHEMA_DIR = path.resolve(__dirname, '../../../../specs/schemas');
+// Schema location depends on how this module is being run:
+//  - Bundled dist (production): schemas are copied next to the compiled
+//    output at build time (see tsup.config.ts onSuccess hook) -> dist/schemas
+//  - Source / vitest (dev, test): running straight from src/schema, so the
+//    canonical specs/schemas/ at the repo root is reachable via a relative
+//    walk up from src/schema.
+// We try each candidate in order and use the first one that actually
+// exists on disk, instead of hardcoding a single relative depth that only
+// happens to be correct for one of these two cases.
+const SCHEMA_DIR_CANDIDATES = [
+  path.resolve(__dirname, 'schemas'),               // dist/schemas (bundled)
+  path.resolve(__dirname, '../../../../specs/schemas'), // repo root (src/schema during dev/test)
+];
+
+function resolveSchemaDir(): string {
+  for (const candidate of SCHEMA_DIR_CANDIDATES) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+  throw new Error(
+    `MMOS schema directory not found. Tried: ${SCHEMA_DIR_CANDIDATES.join(', ')}. ` +
+    `If this is a built package, make sure the tsup build step copied specs/schemas into dist/schemas.`
+  );
+}
 
 const SCHEMA_FILES = [
   'composition.schema.json',
@@ -71,10 +95,13 @@ export function createValidator(): SchemaValidator {
       ownProperties: true,
     });
     addFormatsFn(ajvInstance);
-    
+
+    const schemaDir = resolveSchemaDir();
+    const loadErrors: string[] = [];
+
     // Load all schemas
     for (const schemaFile of SCHEMA_FILES) {
-      const schemaPath = path.join(SCHEMA_DIR, schemaFile);
+      const schemaPath = path.join(schemaDir, schemaFile);
       try {
         const schemaContent = fs.readFileSync(schemaPath, 'utf-8');
         const schema = JSON.parse(schemaContent);
@@ -82,8 +109,21 @@ export function createValidator(): SchemaValidator {
         ajvInstance.addSchema(schema, schemaName);
         compiledSchemas.set(schemaName, ajvInstance.compile(schema));
       } catch (error) {
-        console.warn(`Failed to load schema ${schemaFile}:`, error);
+        loadErrors.push(`${schemaFile}: ${(error as Error).message}`);
       }
+    }
+
+    // Fail loudly rather than silently handing back a validator that will
+    // reject every single call with "schema not found" — that failure mode
+    // is much harder to notice than a startup crash.
+    if (compiledSchemas.size === 0) {
+      ajvInstance = null;
+      compiledSchemas = new Map();
+      throw new Error(
+        `MMOS schema validator failed to load any schemas from ${schemaDir}. Errors: ${loadErrors.join('; ')}`
+      );
+    } else if (loadErrors.length > 0) {
+      console.warn(`MMOS schema validator: ${loadErrors.length} schema(s) failed to load: ${loadErrors.join('; ')}`);
     }
   }
 

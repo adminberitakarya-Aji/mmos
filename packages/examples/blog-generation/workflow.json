@@ -1,0 +1,121 @@
+{
+  "$schema": "../../../specs/schemas/workflow.schema.json",
+  "uoid": {
+    "type": "wfl",
+    "identifier": "wf-blog-generation"
+  },
+  "name": "Blog Generation Workflow",
+  "version": "1.0.0",
+  "spec": {
+    "composition": {
+      "type": "cmp",
+      "identifier": "blog-gen-001"
+    },
+    "entryTask": {
+      "type": "tsk",
+      "identifier": "task-research"
+    },
+    "tasks": [
+      {
+        "type": "tsk",
+        "identifier": "task-research"
+      },
+      {
+        "type": "tsk",
+        "identifier": "task-outline"
+      },
+      {
+        "type": "tsk",
+        "identifier": "task-writing"
+      },
+      {
+        "type": "tsk",
+        "identifier": "task-review"
+      },
+      {
+        "type": "tsk",
+        "identifier": "task-seo"
+      },
+      {
+        "type": "tsk",
+        "identifier": "task-image"
+      },
+      {
+        "type": "tsk",
+        "identifier": "task-package"
+      }
+    ],
+    "transitions": [
+      {
+        "from": {
+          "type": "tsk",
+          "identifier": "task-research"
+        },
+        "to": {
+          "type": "tsk",
+          "identifier": "task-outline"
+        },
+        "condition": "on_success"
+      },
+      {
+        "from": {
+          "type": "tsk",
+          "identifier": "task-outline"
+        },
+        "to": {
+          "type": "tsk",
+          "identifier": "task-writing"
+        },
+        "condition": "on_success"
+      },
+      {
+        "from": {
+          "type": "tsk",
+          "identifier": "task-writing"
+        },
+        "to": {
+          "type": "tsk",
+          "identifier": "task-review"
+        },
+        "condition": "on_success"
+      },
+      {
+        "from": {
+          "type": "tsk",
+          "identifier": "task-review"
+        },
+        "to": {
+          "type": "tsk",
+          "identifier": "task-seo"
+        },
+        "condition": "on_success"
+      },
+      {
+        "from": {
+          "type": "tsk",
+          "identifier": "task-seo"
+        },
+        "to": {
+          "type": "tsk",
+          "identifier": "task-image"
+        },
+        "condition": "on_success"
+      },
+      {
+        "from": {
+          "type": "tsk",
+          "identifier": "task-image"
+        },
+        "to": {
+          "type": "tsk",
+          "identifier": "task-package"
+        },
+        "condition": "on_success"
+      }
+    ]
+  },
+  "metadata": {
+    "createdAt": "2026-07-12T00:00:00.000Z",
+    "tags": ["blog", "content-generation", "seo"]
+  }
+}

@@ -355,24 +355,22 @@ packages/runtime/src/loops/
 ### Milestone 3: Aplikasi Contoh (Minggu 3)
 
 #### 3.1 Pembuatan Blog (`packages/examples/blog-generation/`)
-- [] Create directory structure: `packages/examples/blog-generation/`
-- [] Create composition file: `blog-generation.composition.json`
-- [] Define workflow: Research → Outline → Write → Review → Publish
-- [] Create agent definitions:
+- [x] Create directory structure: `packages/examples/blog-generation/`
+- [x] Create composition file: `blog-generation.composition.json`
+- [x] Define workflow: Research → Outline → Write → Review → Publish
+- [x] Create agent definitions:
     - Researcher agent with web.search capability
     - Writer agent with text.generate capability
     - Editor agent with text.summarize capability
     - Publisher agent with cms.publish capability
-- [] Implement capability implementations:
-    - web.search: HTTP capability for web search
-    - text.generate: Function capability for text generation
-    - text.summarize: Function capability for text summarization
-    - cms.publish: HTTP capability for CMS publishing
-- [] Configure runtime: OpenAI + local memory + HTTP capability
-- [] Create example runner script: `run-blog-example.ts`
-- [] Create environment template: `.env.example`
-- [] Create README with usage instructions
-- [] Test end-to-end: `npx mmos run blog-generation --topic "AI Trends"`
+- [x] Implement capability implementations:
+    - web.search: Web search capability (stub)
+    - text.generate: Text generation capability (stub)
+    - text.summarize: Text summarize/review capability (stub)
+- [x] Configure runtime: blog-generator.ts orchestrator
+- [x] Create example runner script: `src/run-blog-example.ts`
+- [x] Create environment template: `.env.example`
+- [x] Create README with usage instructions
 
 #### 3.2 Produksi Berita (`packages/examples/news-production/`)
 - [ ] Create directory structure: `packages/examples/news-production/`

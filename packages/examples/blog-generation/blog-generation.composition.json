@@ -1,0 +1,78 @@
+{
+  "$schema": "../../../specs/schemas/composition.schema.json",
+  "uoid": {
+    "type": "cmp",
+    "identifier": "blog-gen-001"
+  },
+  "name": "Blog Generation",
+  "version": "1.0.0",
+  "description": "End-to-end blog article generation with research, writing, review, and SEO optimization",
+  "spec": {
+    "project": {
+      "type": "prj",
+      "identifier": "mmos-examples"
+    },
+    "workspace": {
+      "type": "wrk",
+      "identifier": "blog-gen-workspace"
+    },
+    "entryWorkflow": {
+      "type": "wfl",
+      "identifier": "wf-blog-generation"
+    },
+    "workflows": [
+      {
+        "type": "wfl",
+        "identifier": "wf-blog-generation"
+      }
+    ],
+    "agents": [
+      {
+        "type": "agt",
+        "identifier": "researcher-agent"
+      },
+      {
+        "type": "agt",
+        "identifier": "writer-agent"
+      },
+      {
+        "type": "agt",
+        "identifier": "editor-agent"
+      },
+      {
+        "type": "agt",
+        "identifier": "publisher-agent"
+      }
+    ],
+    "capabilities": [
+      {
+        "type": "cap",
+        "identifier": "web-search"
+      },
+      {
+        "type": "cap",
+        "identifier": "text-generate"
+      },
+      {
+        "type": "cap",
+        "identifier": "text-summarize"
+      },
+      {
+        "type": "cap",
+        "identifier": "cms-publish"
+      }
+    ],
+    "memory": [
+      {
+        "type": "mem",
+        "identifier": "blog-context"
+      }
+    ]
+  },
+  "metadata": {
+    "createdAt": "2026-07-12T00:00:00.000Z",
+    "updatedAt": "2026-07-12T00:00:00.000Z",
+    "tags": ["blog", "content-generation", "seo"],
+    "author": "MMOS Team"
+  }
+}

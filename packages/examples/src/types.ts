@@ -91,7 +91,10 @@ export function parseExampleArgs<T extends Record<string, unknown>>(
         } else if (config.type === 'string' && i + 1 < args.length) {
           (result as Record<string, unknown>)[config.key as string] = args[++i];
         } else if (config.type === 'array' && i + 1 < args.length) {
-          (result as Record<string, unknown>)[config.key as string] = args[++i].split(',');
+          const value = args[++i];
+          if (value !== undefined) {
+            (result as Record<string, unknown>)[config.key as string] = value.split(',');
+          }
         }
       }
     }
@@ -115,7 +118,10 @@ export function slugify(text: string): string {
  * Format timestamp for filenames
  */
 export function getTimestamp(): string {
-  return new Date().toISOString().split('T')[0];
+  // toISOString() always has the form 'YYYY-MM-DDTHH:mm:ss.sssZ', so the
+  // 'T'-split date segment is guaranteed to exist; the fallback only
+  // satisfies noUncheckedIndexedAccess, it's never actually reached.
+  return new Date().toISOString().split('T')[0] ?? '';
 }
 
 /**

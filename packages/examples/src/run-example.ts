@@ -71,6 +71,21 @@ export interface RunOptions {
 }
 
 /**
+ * Read a required CLI flag value out of argv, exiting with a clear error
+ * instead of silently accepting `undefined`. `process.exit` is typed as
+ * `never`, so after this call TypeScript narrows the result to `string`
+ * (not `string | undefined`) for every caller under `exactOptionalPropertyTypes`.
+ */
+function requireArgValue(args: readonly string[], index: number, flagLabel: string): string {
+  const value = args[index];
+  if (value === undefined) {
+    console.error(`\n❌ Error: --${flagLabel} requires a value\n`);
+    process.exit(1);
+  }
+  return value;
+}
+
+/**
  * Run an example with common configuration
  */
 export async function runExample(options: RunOptions): Promise<void> {
@@ -96,12 +111,12 @@ export async function runExample(options: RunOptions): Promise<void> {
     }
     
     if (arg === '--log-level' && i + 1 < args.length) {
-      config.logLevel = args[++i] as LogLevel;
+      config.logLevel = requireArgValue(args, ++i, 'log-level') as LogLevel;
       continue;
     }
     
     if (arg === '--output-dir' && i + 1 < args.length) {
-      config.outputDir = args[++i];
+      config.outputDir = requireArgValue(args, ++i, 'output-dir');
       continue;
     }
     
@@ -110,9 +125,9 @@ export async function runExample(options: RunOptions): Promise<void> {
         if (flagConfig.type === 'boolean') {
           input[flag] = true;
         } else if (flagConfig.type === 'string' && i + 1 < args.length) {
-          input[flag] = args[++i];
+          input[flag] = requireArgValue(args, ++i, flag);
         } else if (flagConfig.type === 'array' && i + 1 < args.length) {
-          input[flag] = args[++i].split(',');
+          input[flag] = requireArgValue(args, ++i, flag).split(',');
         }
       }
     }

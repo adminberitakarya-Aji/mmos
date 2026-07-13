@@ -43,6 +43,9 @@ jobs:
       - name: Test Runtime
         run: npm test --workspace=@mmos/runtime
 
+  # Note: @mmos/examples has no "build" step by design — it's source-only,
+  # consumed directly via its .ts exports (see packages/examples/package.json),
+  # not bundled or published. It's still covered above by Typecheck Examples.
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -65,6 +68,3 @@ jobs:
       
       - name: Build Runtime
         run: npm run build --workspace=@mmos/runtime
-      
-      - name: Build Examples
-        run: npm run build --workspace=@mmos/examples

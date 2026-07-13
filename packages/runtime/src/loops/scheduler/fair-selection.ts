@@ -25,7 +25,16 @@ interface FairEntry {
   readonly executionUoid: Uoid;
   lastServedAt: Date;
   firstSeenAt: Date;
-  seq: number;
+  /**
+   * Logical serve order, assigned each time this entry is actually served
+   * (not at creation time). Starts at -1 ("never served") so that, on a
+   * lastServedAt tie, an entry that hasn't been served yet always outranks
+   * one that has. This is what makes round-robin deterministic even when
+   * multiple picks happen within the same millisecond (wall-clock
+   * resolution), which creation-order tie-breaking cannot do since it never
+   * changes after an entry is first seen.
+   */
+  servedSeq: number;
 }
 
 export interface FairSnapshot {
@@ -53,13 +62,13 @@ export function createFairSelector(options: FairSelectorOptions = {}): FairSelec
   const maxWaitMs = options.maxWaitMs ?? 30_000;
   const now = options.now ?? (() => new Date());
   const entries = new Map<string, FairEntry>();
-  let globalSeq = 0;
+  let globalServeSeq = 0;
 
   function getOrCreate(uoid: Uoid): FairEntry {
     const key = uoid.toString();
     let e = entries.get(key);
     if (!e) {
-      e = { executionUoid: uoid, lastServedAt: now(), firstSeenAt: now(), seq: globalSeq++ };
+      e = { executionUoid: uoid, lastServedAt: now(), firstSeenAt: now(), servedSeq: -1 };
       entries.set(key, e);
     }
     return e;
@@ -82,30 +91,40 @@ export function createFairSelector(options: FairSelectorOptions = {}): FairSelec
       });
       if (starved) {
         const e = entries.get(starved.toString());
-        if (e) e.lastServedAt = now();
+        if (e) {
+          e.lastServedAt = now();
+          e.servedSeq = globalServeSeq++;
+        }
         return starved;
       }
       // 2. Touch unknown candidates so they have a fair chance
       for (const c of candidates) getOrCreate(c);
-      // 3. Round-robin: pick the one served least recently
-      // Use seq as tie-breaker when timestamps are equal
+      // 3. Round-robin: pick the one served least recently.
+      // On a lastServedAt tie (common at ms wall-clock resolution under
+      // fast/synchronous execution), break the tie by servedSeq ascending:
+      // never-served entries (-1) win over any served entry, and among
+      // served entries the one served longest ago (lowest servedSeq) wins.
+      // This is what actually makes rotation deterministic, unlike a
+      // creation-time seq which never changes after an entry is first seen.
       const sorted = [...candidates].sort((a, b) => {
         const ea = entries.get(a.toString());
         const eb = entries.get(b.toString());
         const ta = ea ? ea.lastServedAt.getTime() : 0;
         const tb = eb ? eb.lastServedAt.getTime() : 0;
         if (ta !== tb) return ta - tb;
-        // Tie-breaker: lower seq (created first) wins
-        return (ea?.seq ?? 0) - (eb?.seq ?? 0);
+        return (ea?.servedSeq ?? -1) - (eb?.servedSeq ?? -1);
       });
       const winner = sorted[0]!;
       const e = entries.get(winner.toString());
-      if (e) e.lastServedAt = now();
+      if (e) {
+        e.lastServedAt = now();
+        e.servedSeq = globalServeSeq++;
+      }
       return winner;
     },
     reset() {
       entries.clear();
-      globalSeq = 0;
+      globalServeSeq = 0;
     },
     snapshot() {
       const t = now().getTime();

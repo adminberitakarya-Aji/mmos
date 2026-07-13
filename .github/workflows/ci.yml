@@ -31,6 +31,13 @@ jobs:
       - name: Typecheck SDK
         run: npm run typecheck --workspace=@mmos/sdk
       
+      # @mmos/runtime imports @mmos/sdk via its built dist/ output (not
+      # source .ts directly), so both the typecheck and the test step below
+      # need SDK built first — otherwise they fail on a clean checkout with
+      # "Cannot find module '@mmos/sdk'" even though the code itself is fine.
+      - name: Build SDK
+        run: npm run build --workspace=@mmos/sdk
+      
       - name: Typecheck Runtime
         run: npm run typecheck --workspace=@mmos/runtime
       

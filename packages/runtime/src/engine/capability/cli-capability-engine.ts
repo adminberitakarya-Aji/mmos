@@ -3,11 +3,50 @@
  * Per ADR-010: Capability as Contract
  */
 
-import { exec, type ExecOptions } from 'node:child_process';
-import { promisify } from 'node:util';
+import { exec, execFile, type ExecOptions, type ExecFileOptions } from 'node:child_process';
 import { writeFile, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+
+/**
+ * Manually-typed promise wrappers instead of `util.promisify(exec)` /
+ * `util.promisify(execFile)`. Node's typings overload those functions on
+ * the shape of the options object (encoding, shell, etc.), and promisify
+ * only picks one overload — which forces awkward `as unknown as X` casts at
+ * every call site to fight the type checker. Wrapping manually keeps the
+ * types simple and correct: options in, `{ stdout, stderr }` (always
+ * strings) out, and the original error (with stdout/stderr attached) on
+ * failure so existing error-handling below keeps working unchanged.
+ */
+function execAsync(command: string, options: ExecOptions): Promise<{ stdout: string; stderr: string }> {
+  return new Promise((resolve, reject) => {
+    exec(command, options, (error, stdout, stderr) => {
+      if (error) {
+        Object.assign(error, { stdout: stdout.toString(), stderr: stderr.toString() });
+        reject(error);
+        return;
+      }
+      resolve({ stdout: stdout.toString(), stderr: stderr.toString() });
+    });
+  });
+}
+
+function execFileAsync(
+  file: string,
+  args: readonly string[],
+  options: ExecFileOptions
+): Promise<{ stdout: string; stderr: string }> {
+  return new Promise((resolve, reject) => {
+    execFile(file, args as string[], options, (error, stdout, stderr) => {
+      if (error) {
+        Object.assign(error, { stdout: stdout.toString(), stderr: stderr.toString() });
+        reject(error);
+        return;
+      }
+      resolve({ stdout: stdout.toString(), stderr: stderr.toString() });
+    });
+  });
+}
 
 import type { Uoid } from '@mmos/sdk';
 import {
@@ -20,7 +59,7 @@ import {
   type EngineHealth,
 } from '@mmos/sdk';
 
-const execAsync = promisify(exec);
+
 
 export interface CliCapabilityEngineOptions {
   readonly name?: string;
@@ -167,10 +206,12 @@ export class CliCapabilityEngine implements CapabilityEngine {
       }
     }
 
-    // Build command string with template substitution
+    // Build resolved args with template substitution. Each argument is kept
+    // as a separate array element — never concatenated into one string —
+    // so a value like "foo.jpg; rm -rf /" is passed through as a single
+    // literal argument, not interpreted as two shell commands.
     const input = params.input;
     const resolvedArgs = (config.args ?? []).map(arg => this.resolveTemplate(arg, input));
-    const commandStr = [config.command, ...resolvedArgs].join(' ');
 
     // Build environment
     const env: Record<string, string | undefined> = {
@@ -194,14 +235,28 @@ export class CliCapabilityEngine implements CapabilityEngine {
     }
 
     const timeout = params.timeout ?? config.timeout ?? this.defaultTimeout;
+    const cwd = config.cwd ?? this.workingDirectory;
 
-    const execOptions: ExecOptions = {
-      cwd: config.cwd ?? this.workingDirectory,
-      env: env as NodeJS.ProcessEnv,
-      timeout,
-      maxBuffer: this.maxOutputSize,
-      shell: config.shell === undefined ? (true as unknown as string) : (config.shell as unknown as string),
-    };
+    // SECURITY: shell is opt-in and OFF by default.
+    //
+    // Previously this always ran via `exec()` with `shell: true`, joining
+    // command + resolved args into one string. Any shell metacharacter
+    // (`;`, `|`, `&&`, `$(...)`, backticks, `>` ...) present in a resolved
+    // template value — which can come from task input, i.e. attacker- or
+    // AI-generated content — was interpreted by the shell. That's arbitrary
+    // command execution, not just "running the registered command".
+    //
+    // By default we now use `execFile()`, which invokes the binary directly
+    // with argv passed as an array. There is no shell in the loop at all, so
+    // there is nothing for injected metacharacters to be interpreted *by* —
+    // "foo.jpg; rm -rf /" arrives at the child process as one literal
+    // argument, not two commands.
+    //
+    // `config.shell: true` remains available for commands that genuinely
+    // need shell features (pipes, redirects, globbing), but every
+    // substituted value is shell-escaped first so it still can't break out
+    // of its argument position.
+    const useShell = config.shell === true;
 
     try {
       // Write stdin to temp file if provided and execute
@@ -214,7 +269,27 @@ export class CliCapabilityEngine implements CapabilityEngine {
         env['MMOS_STDIN_FILE'] = stdinFile;
       }
 
-      const { stdout, stderr } = await execAsync(commandStr, execOptions);
+      let stdout: string;
+      let stderr: string;
+
+      if (useShell) {
+        const commandStr = [config.command, ...resolvedArgs.map(a => this.shellEscape(a))].join(' ');
+        const execOptions: ExecOptions = {
+          cwd,
+          env: env as NodeJS.ProcessEnv,
+          timeout,
+          maxBuffer: this.maxOutputSize,
+        };
+        ({ stdout, stderr } = await execAsync(commandStr, execOptions));
+      } else {
+        const execFileOptions: ExecFileOptions = {
+          cwd,
+          env: env as NodeJS.ProcessEnv,
+          timeout,
+          maxBuffer: this.maxOutputSize,
+        };
+        ({ stdout, stderr } = await execFileAsync(config.command, resolvedArgs, execFileOptions));
+      }
 
       // Cleanup temp dir
       if (tempDir) {
@@ -292,6 +367,18 @@ export class CliCapabilityEngine implements CapabilityEngine {
       }
       return String(value);
     });
+  }
+
+  /**
+   * POSIX shell-quote a single argument: wrap in single quotes and escape
+   * any embedded single quote, so the value is treated as one literal
+   * argument even by a shell. Only used when `config.shell: true` is
+   * explicitly opted into (e.g. a command that needs pipes or redirects).
+   * Note: this targets POSIX shells (sh/bash); it does not cover cmd.exe
+   * quoting rules on Windows — prefer the default non-shell mode there.
+   */
+  private shellEscape(value: string): string {
+    return `'${value.replace(/'/g, `'\\''`)}'`;
   }
 
   /**

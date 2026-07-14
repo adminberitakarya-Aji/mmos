@@ -1,0 +1,260 @@
+diff --git a/packages/runtime/src/engine/capability/cli-capability-engine.test.ts b/packages/runtime/src/engine/capability/cli-capability-engine.test.ts
+new file mode 100644
+index 0000000..3dd0041
+--- /dev/null
++++ b/packages/runtime/src/engine/capability/cli-capability-engine.test.ts
+@@ -0,0 +1,87 @@
++import { describe, it, expect, afterEach } from 'vitest';
++import { existsSync, unlinkSync } from 'node:fs';
++import { join } from 'node:path';
++import { tmpdir } from 'node:os';
++import { createUoid } from '@mmos/sdk';
++import { CliCapabilityEngine } from './cli-capability-engine.js';
++
++/**
++ * Regression tests for the command-injection fix.
++ *
++ * Before the fix, task input was substituted into a single command string
++ * and run via `exec(..., { shell: true })`. A value containing shell
++ * metacharacters (`;`, `|`, `$(...)`, etc.) was interpreted by the shell,
++ * letting task input execute arbitrary commands. These tests assert that a
++ * malicious value is now treated as an inert literal argument by default.
++ */
++describe('CliCapabilityEngine - command injection fix', () => {
++  const markerFile = join(tmpdir(), `mmos-cli-injection-test-${process.pid}.txt`);
++
++  afterEach(() => {
++    if (existsSync(markerFile)) unlinkSync(markerFile);
++  });
++
++  it('does NOT execute shell metacharacters embedded in task input by default (no shell)', async () => {
++    const engine = new CliCapabilityEngine();
++    // Use the Node binary itself as the "command": it's a real executable
++    // guaranteed to exist on every platform (Linux, macOS, Windows), unlike
++    // `echo`, which on Windows is only a cmd.exe builtin, not a standalone
++    // .exe — that would fail to spawn under execFile() for an unrelated
++    // (platform) reason and mask what this test is actually checking.
++    engine.register('echo-test', 'test', {
++      command: process.execPath,
++      args: ['-e', 'process.stdout.write(process.argv[process.argv.length - 1])', '{value}'],
++    });
++
++    const maliciousValue = `hello; touch ${markerFile}`;
++
++    const result = await engine.invoke({
++      capabilityUoid: createUoid('cap', 'echo-test'),
++      input: { category: 'test', name: 'echo-test', value: maliciousValue },
++    });
++
++    // The injected "touch <file>" must NOT have run.
++    expect(existsSync(markerFile)).toBe(false);
++    // The value must come back as one literal, unexecuted string.
++    expect(result.output.stdout as string).toBe(maliciousValue);
++  });
++
++  it('rejects a base command not in the allow-list regardless of args', async () => {
++    const engine = new CliCapabilityEngine({ allowedCommands: ['echo'] });
++    engine.register('bad', 'test', { command: 'rm', args: ['-rf', '{target}'] });
++
++    await expect(
++      engine.invoke({
++        capabilityUoid: createUoid('cap', 'bad'),
++        input: { category: 'test', name: 'bad', target: '/tmp/whatever' },
++      })
++    ).rejects.toThrow(/not in the allowed list/);
++  });
++
++  // shellEscape() targets POSIX shell quoting (bash/sh). cmd.exe on Windows
++  // has entirely different, notoriously inconsistent quoting rules, so this
++  // particular guarantee doesn't apply there — skip rather than give a
++  // false signal. The security-critical default path (no shell at all,
++  // tested above) is platform-independent and unaffected by this.
++  it.skipIf(process.platform === 'win32')(
++    'still supports opt-in shell mode safely (value with a single quote round-trips literally)',
++    async () => {
++      const engine = new CliCapabilityEngine();
++      engine.register('echo-shell', 'test', {
++        command: 'echo',
++        args: ['{value}'],
++        shell: true,
++      });
++
++      const trickyValue = `it's ${markerFile.replace(/'/g, '')} safe`;
++
++      const result = await engine.invoke({
++        capabilityUoid: createUoid('cap', 'echo-shell'),
++        input: { category: 'test', name: 'echo-shell', value: trickyValue },
++      });
++
++      expect(existsSync(markerFile)).toBe(false);
++      expect((result.output.stdout as string).trim()).toBe(trickyValue);
++    }
++  );
++});
+diff --git a/packages/runtime/src/engine/capability/cli-capability-engine.ts b/packages/runtime/src/engine/capability/cli-capability-engine.ts
+index 6b208fc..72e20e0 100644
+--- a/packages/runtime/src/engine/capability/cli-capability-engine.ts
++++ b/packages/runtime/src/engine/capability/cli-capability-engine.ts
+@@ -3,12 +3,51 @@
+  * Per ADR-010: Capability as Contract
+  */
+ 
+-import { exec, type ExecOptions } from 'node:child_process';
+-import { promisify } from 'node:util';
++import { exec, execFile, type ExecOptions, type ExecFileOptions } from 'node:child_process';
+ import { writeFile, mkdtemp, rm } from 'node:fs/promises';
+ import { tmpdir } from 'node:os';
+ import { join } from 'node:path';
+ 
++/**
++ * Manually-typed promise wrappers instead of `util.promisify(exec)` /
++ * `util.promisify(execFile)`. Node's typings overload those functions on
++ * the shape of the options object (encoding, shell, etc.), and promisify
++ * only picks one overload — which forces awkward `as unknown as X` casts at
++ * every call site to fight the type checker. Wrapping manually keeps the
++ * types simple and correct: options in, `{ stdout, stderr }` (always
++ * strings) out, and the original error (with stdout/stderr attached) on
++ * failure so existing error-handling below keeps working unchanged.
++ */
++function execAsync(command: string, options: ExecOptions): Promise<{ stdout: string; stderr: string }> {
++  return new Promise((resolve, reject) => {
++    exec(command, options, (error, stdout, stderr) => {
++      if (error) {
++        Object.assign(error, { stdout: stdout.toString(), stderr: stderr.toString() });
++        reject(error);
++        return;
++      }
++      resolve({ stdout: stdout.toString(), stderr: stderr.toString() });
++    });
++  });
++}
++
++function execFileAsync(
++  file: string,
++  args: readonly string[],
++  options: ExecFileOptions
++): Promise<{ stdout: string; stderr: string }> {
++  return new Promise((resolve, reject) => {
++    execFile(file, args as string[], options, (error, stdout, stderr) => {
++      if (error) {
++        Object.assign(error, { stdout: stdout.toString(), stderr: stderr.toString() });
++        reject(error);
++        return;
++      }
++      resolve({ stdout: stdout.toString(), stderr: stderr.toString() });
++    });
++  });
++}
++
+ import type { Uoid } from '@mmos/sdk';
+ import {
+   type CapabilityEngine,
+@@ -20,7 +59,7 @@ import {
+   type EngineHealth,
+ } from '@mmos/sdk';
+ 
+-const execAsync = promisify(exec);
++
+ 
+ export interface CliCapabilityEngineOptions {
+   readonly name?: string;
+@@ -167,10 +206,12 @@ export class CliCapabilityEngine implements CapabilityEngine {
+       }
+     }
+ 
+-    // Build command string with template substitution
++    // Build resolved args with template substitution. Each argument is kept
++    // as a separate array element — never concatenated into one string —
++    // so a value like "foo.jpg; rm -rf /" is passed through as a single
++    // literal argument, not interpreted as two shell commands.
+     const input = params.input;
+     const resolvedArgs = (config.args ?? []).map(arg => this.resolveTemplate(arg, input));
+-    const commandStr = [config.command, ...resolvedArgs].join(' ');
+ 
+     // Build environment
+     const env: Record<string, string | undefined> = {
+@@ -194,14 +235,28 @@ export class CliCapabilityEngine implements CapabilityEngine {
+     }
+ 
+     const timeout = params.timeout ?? config.timeout ?? this.defaultTimeout;
+-
+-    const execOptions: ExecOptions = {
+-      cwd: config.cwd ?? this.workingDirectory,
+-      env: env as NodeJS.ProcessEnv,
+-      timeout,
+-      maxBuffer: this.maxOutputSize,
+-      shell: config.shell === undefined ? (true as unknown as string) : (config.shell as unknown as string),
+-    };
++    const cwd = config.cwd ?? this.workingDirectory;
++
++    // SECURITY: shell is opt-in and OFF by default.
++    //
++    // Previously this always ran via `exec()` with `shell: true`, joining
++    // command + resolved args into one string. Any shell metacharacter
++    // (`;`, `|`, `&&`, `$(...)`, backticks, `>` ...) present in a resolved
++    // template value — which can come from task input, i.e. attacker- or
++    // AI-generated content — was interpreted by the shell. That's arbitrary
++    // command execution, not just "running the registered command".
++    //
++    // By default we now use `execFile()`, which invokes the binary directly
++    // with argv passed as an array. There is no shell in the loop at all, so
++    // there is nothing for injected metacharacters to be interpreted *by* —
++    // "foo.jpg; rm -rf /" arrives at the child process as one literal
++    // argument, not two commands.
++    //
++    // `config.shell: true` remains available for commands that genuinely
++    // need shell features (pipes, redirects, globbing), but every
++    // substituted value is shell-escaped first so it still can't break out
++    // of its argument position.
++    const useShell = config.shell === true;
+ 
+     try {
+       // Write stdin to temp file if provided and execute
+@@ -214,7 +269,27 @@ export class CliCapabilityEngine implements CapabilityEngine {
+         env['MMOS_STDIN_FILE'] = stdinFile;
+       }
+ 
+-      const { stdout, stderr } = await execAsync(commandStr, execOptions);
++      let stdout: string;
++      let stderr: string;
++
++      if (useShell) {
++        const commandStr = [config.command, ...resolvedArgs.map(a => this.shellEscape(a))].join(' ');
++        const execOptions: ExecOptions = {
++          cwd,
++          env: env as NodeJS.ProcessEnv,
++          timeout,
++          maxBuffer: this.maxOutputSize,
++        };
++        ({ stdout, stderr } = await execAsync(commandStr, execOptions));
++      } else {
++        const execFileOptions: ExecFileOptions = {
++          cwd,
++          env: env as NodeJS.ProcessEnv,
++          timeout,
++          maxBuffer: this.maxOutputSize,
++        };
++        ({ stdout, stderr } = await execFileAsync(config.command, resolvedArgs, execFileOptions));
++      }
+ 
+       // Cleanup temp dir
+       if (tempDir) {
+@@ -294,6 +369,18 @@ export class CliCapabilityEngine implements CapabilityEngine {
+     });
+   }
+ 
++  /**
++   * POSIX shell-quote a single argument: wrap in single quotes and escape
++   * any embedded single quote, so the value is treated as one literal
++   * argument even by a shell. Only used when `config.shell: true` is
++   * explicitly opted into (e.g. a command that needs pipes or redirects).
++   * Note: this targets POSIX shells (sh/bash); it does not cover cmd.exe
++   * quoting rules on Windows — prefer the default non-shell mode there.
++   */
++  private shellEscape(value: string): string {
++    return `'${value.replace(/'/g, `'\\''`)}'`;
++  }
++
+   /**
+    * Clear all registered commands
+    */
